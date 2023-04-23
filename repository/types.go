@@ -3,33 +3,27 @@ package repository
 import "errors"
 
 type ChatInfo struct {
-	ChatID int64
-	Active bool
-	Lang   Lang
-	State  State
+	ChatID    int64
+	Active    bool
+	Lang      Lang
+	State     State
+	PrevState State
+	CMD       bool
 }
 
 type Message struct {
-	ID             int64
-	MessageTrigger string
-	KzText         string
-	RuText         string
-	EnText         string
-	State          State
-}
-
-type MessageWithLang struct {
-	ID    int64
-	Text  string
-	State State
+	ID        int64
+	Trigger   string
+	Text      string
+	Lang      Lang
+	State     State
+	PrevState State
 }
 
 type Keyboard struct {
-	ID     int64
-	KzText string
-	RuText string
-	EnText string
-	State  State
+	ID   int64
+	Text string
+	Lang Lang
 }
 
 type FileInfo struct {
@@ -62,14 +56,11 @@ var (
 	ErrUndefinedState    = errors.New("undefined state")
 )
 
-type State int
-
-const (
-	DefaultState     State = 0
-	ChangeLangState  State = 1
-	AskQuestionState State = 2
-)
+type State struct {
+	ID   int
+	Name string
+}
 
 func (s State) Equals(state State) bool {
-	return s == state
+	return s.Name == state.Name
 }

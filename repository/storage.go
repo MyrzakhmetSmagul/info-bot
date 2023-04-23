@@ -16,16 +16,18 @@ type Chat interface {
 	DisableChat(chatID int64) error
 	ChangeLang(info ChatInfo) error
 	ChangeState(info ChatInfo) error
+	EnableCMD(chatID int64) error
+	DisableCMD(chatID int64) error
 }
 
 type MessageKeyboardStorage interface {
-	GetMessage(trigger string) (*Message, error)
-	GetLangMessage(trigger string, lang Lang) (*MessageWithLang, error)
+	GetMessage(trigger string, lang Lang, prevState State) (*Message, error)
 	CreateMessage(msg Message) error
-	UpdateMessage(msg Message) (err error)
-	GetReplyMarkup(messageID int64, lang Lang) (*tgbotapi.ReplyKeyboardMarkup, error)
+	UpdateMessage(msg *Message, text string) (err error)
+	GetReplyMarkup(msgID int64, lang Lang) (*tgbotapi.ReplyKeyboardMarkup, error)
 	GetKeyboardButtons(messageID int64, lang Lang) ([]tgbotapi.KeyboardButton, error)
-	CreateKeyboard(keyboard Keyboard) (err error)
+	CreateKeyboard(keyboard *Keyboard) error
+	CreateKeyboards(keyboards []*Keyboard) error
 	CreateReplyMarkup(messageID, keyboardID int64) error
 	AddFileForMessage(fileInfo FileInfo) error
 	GetFilesInfoOfMessage(messageID int64) ([]FileInfo, error)

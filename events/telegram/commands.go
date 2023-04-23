@@ -127,7 +127,7 @@ func (p *Processor) sendMessage(chatID int64, trigger string, lang repository.La
 	return msg.State, nil
 }
 
-func (p *Processor) getMessageAndReply(text string, lang repository.Lang) (*repository.MessageWithLang, *tgbotapi.ReplyKeyboardMarkup, error) {
+func (p *Processor) getMessageAndReply(text string, lang repository.Lang) (*repository.Message, *tgbotapi.ReplyKeyboardMarkup, error) {
 	msg, err := p.storage.GetLangMessage(text, lang)
 	if err != nil {
 		return nil, nil, fmt.Errorf("can't get message: %w", err)
