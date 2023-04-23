@@ -13,21 +13,18 @@ CREATE TABLE IF NOT EXISTS `message_group`
     `message_id` INT NOT NULL,
     `state_id`   INT NOT NULL,
     PRIMARY KEY (`id`),
-    CONSTRAINT `message group_fk0` FOREIGN KEY (`message_id`) REFERENCES `message` (`id`)
+    CONSTRAINT `message_group_fk0` FOREIGN KEY (`message_id`) REFERENCES `message` (`id`),
+    CONSTRAINT `message_group_fk1` FOREIGN KEY (`state_id`) REFERENCES `state` (`id`)
 );
 
 CREATE TABLE IF NOT EXISTS `state`
 (
-    `id`   INT  NOT NULL,
+    `id`   INT  NOT NULL AUTO_INCREMENT,
     `name` TEXT NOT NULL,
     PRIMARY KEY (`id`)
 );
 
-ALTER TABLE `message_group`
-    ADD CONSTRAINT `message_group_fk0` FOREIGN KEY (`message_id`) REFERENCES `message` (`id`);
 
-ALTER TABLE `message_group`
-    ADD CONSTRAINT `message_group_fk1` FOREIGN KEY (`state_id`) REFERENCES `state` (`id`);
 
 CREATE TABLE IF NOT EXISTS `keyboard`
 (
