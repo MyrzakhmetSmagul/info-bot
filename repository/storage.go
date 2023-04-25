@@ -7,6 +7,7 @@ import (
 type Repository interface {
 	Chat
 	MessageKeyboardStorage
+	Question
 }
 
 type Chat interface {
@@ -31,4 +32,9 @@ type MessageKeyboardStorage interface {
 	CreateReplyMarkup(messageID, keyboardID int64) error
 	AddFileForMessage(fileInfo FileInfo) error
 	GetFilesInfoOfMessage(messageID int64) ([]FileInfo, error)
+}
+
+type Question interface {
+	CreateQuestion(question *QuestionInfo) error
+	AnswerToQuestion(question *QuestionInfo, answer string) error
 }

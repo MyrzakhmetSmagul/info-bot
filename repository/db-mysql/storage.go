@@ -4,15 +4,14 @@ import (
 	"database/sql"
 	"github.com/go-sql-driver/mysql"
 	"log"
-	"os"
-	"path"
-	"tg-bot/lib/e"
 	"tg-bot/repository"
 )
 
 type storage struct {
 	db *sql.DB
 }
+
+var StartState int
 
 func New(cnf mysql.Config) repository.Repository {
 	db, err := sql.Open("mysql", cnf.FormatDSN())
@@ -28,36 +27,25 @@ func New(cnf mysql.Config) repository.Repository {
 		db: db,
 	}
 
-	if err = storage.createDB(); err != nil {
-		log.Fatal(err)
-	}
+	storage.getNeedState()
 
 	return storage
 }
 
-func (s *storage) createDB() (err error) {
-	const errMsg = "can't create db"
-	defer func() { err = e.WrapIfErr(errMsg, err) }()
-
-	tx, err := s.db.Begin()
+func (s *storage) getNeedState() {
+	query := `SELECT id, name FROM state WHERE name='/start'`
+	err := s.db.QueryRow(query).Scan(&repository.StartState.ID, repository.StartState.Name)
 	if err != nil {
-		return err
+		log.Fatal(err)
 	}
-
-	defer tx.Rollback()
-
-	script, err := os.ReadFile(path.Clean("./repository/db-mysql/tg-bot_mysql_create.sql"))
+	query = `SELECT id, name FROM state WHERE name='/language'`
+	err = s.db.QueryRow(query).Scan(&repository.LanguageState.ID, repository.LanguageState.Name)
 	if err != nil {
-		return err
+		log.Fatal(err)
 	}
-
-	if _, err := s.db.Query(string(script)); err != nil {
-		return err
+	query = `SELECT id, name FROM state WHERE name='/question'`
+	err = s.db.QueryRow(query).Scan(&repository.QuestionState.ID, repository.QuestionState.Name)
+	if err != nil {
+		log.Fatal(err)
 	}
-
-	if err = tx.Commit(); err != nil {
-		return err
-	}
-
-	return nil
 }

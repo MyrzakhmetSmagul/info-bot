@@ -7,10 +7,18 @@ import (
 )
 
 func (s *storage) ChatInfo(chatID int64) (repository.ChatInfo, error) {
-	query := `SELECT active, lang, state, prev_state, cmd FROM chat WHERE chat_id=?`
+	query := `SELECT c.active, c.lang, s.idm s.name, ps.id, ps.name, c.cmd 
+				FROM chat c 
+		    	INNER JOIN state s ON c.state_id=s.id
+				INNER JOIN state ps ON c.prev_state=ps.id
+		    	WHERE chat_id=?`
 	result := repository.ChatInfo{ChatID: chatID}
-
-	if err := s.db.QueryRow(query, chatID).Scan(&result.Active, &result.Lang, &result.State.ID, &result.PrevState.ID, &result.CMD); err != nil {
+	err := s.db.QueryRow(query, chatID).Scan(
+		&result.Active, &result.Lang, &result.State.ID,
+		&result.State.Name, &result.PrevState.ID, &result.PrevState.Name,
+		&result.CMD,
+	)
+	if err != nil {
 		return repository.ChatInfo{}, e.Wrap("can't get chat info from db", err)
 	}
 

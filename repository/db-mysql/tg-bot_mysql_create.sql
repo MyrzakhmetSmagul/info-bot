@@ -12,7 +12,7 @@ CREATE TABLE IF NOT EXISTS `message`
     `text`            TEXT         NOT NULL,
     `lang`            ENUM ("kz","ru","en") DEFAULT "kz",
     `state_id`        INT          NOT NULL,
-    `prev_state_id`   int          NOT NULL,
+    `prev_state_id`   INT          NOT NULL,
     PRIMARY KEY (`id`),
     CONSTRAINT `message_fk0` FOREIGN KEY (`state_id`) REFERENCES `state` (`id`),
     CONSTRAINT `message_fk1` FOREIGN KEY (`prev_state_id`) REFERENCES `state` (`id`)
@@ -68,4 +68,14 @@ CREATE TABLE IF NOT EXISTS `chat`
     PRIMARY KEY (`chat_id`),
     CONSTRAINT `chat_fk0` FOREIGN KEY (`state`) REFERENCES `state` (`id`),
     CONSTRAINT `chat_fk1` FOREIGN KEY (`prev_state`) REFERENCES `state` (`id`)
+);
+
+CREATE TABLE `question`
+(
+    `id`       INT  NOT NULL AUTO_INCREMENT,
+    `chat_id`  INT  NOT NULL,
+    `question` TEXT NOT NULL,
+    `answer`   TEXT,
+    PRIMARY KEY (`id`),
+    CONSTRAINT `question_fk0` FOREIGN KEY (`chat_id`) REFERENCES `chat` (`chat_id`)
 );

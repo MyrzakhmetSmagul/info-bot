@@ -11,6 +11,17 @@ type ChatInfo struct {
 	CMD       bool
 }
 
+func NewChatInfo(chatID int64) *ChatInfo {
+	return &ChatInfo{
+		ChatID:    chatID,
+		Active:    true,
+		Lang:      Ru,
+		State:     StartState,
+		PrevState: StartState,
+		CMD:       false,
+	}
+}
+
 type Message struct {
 	ID        int64
 	Trigger   string
@@ -32,6 +43,13 @@ type FileInfo struct {
 	Name      string
 	Type      File
 	Content   []byte
+}
+
+type QuestionInfo struct {
+	ID       int
+	ChatID   int64
+	Question string
+	Answer   string
 }
 
 type Lang string
@@ -61,6 +79,8 @@ type State struct {
 	Name string
 }
 
-func (s State) Equals(state State) bool {
-	return s.Name == state.Name
-}
+var (
+	StartState    State
+	LanguageState State
+	QuestionState State
+)

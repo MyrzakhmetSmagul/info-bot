@@ -20,12 +20,7 @@ func (p *Processor) middleware(chatID int64, text, username string) (err error) 
 
 	if errors.Is(err, sql.ErrNoRows) {
 		if text == "/start" {
-			chatInfo = repository.ChatInfo{
-				ChatID: chatID,
-				Active: true,
-				Lang:   repository.Ru,
-				State:  repository.DefaultState,
-			}
+			chatInfo = *repository.NewChatInfo(chatID)
 			err = p.storage.SaveChat(chatInfo)
 			if err != nil {
 				return err
@@ -51,5 +46,5 @@ func (p *Processor) middleware(chatID int64, text, username string) (err error) 
 		return err
 	}
 
-	return p.doCmd(chatInfo, text, username)
+	return p.processing(chatInfo, text, username)
 }
