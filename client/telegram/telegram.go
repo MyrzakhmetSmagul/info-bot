@@ -7,9 +7,18 @@ import (
 
 type Client interface {
 	Updates(offset, limit int) ([]tgbotapi.Update, error)
-	SendMessage(chatID int64, message string, replyMarkup *tgbotapi.ReplyKeyboardMarkup) error
-	SendMessageWithFile(chatID int64, fileInfo repository.FileInfo, caption string, replyMarkup *tgbotapi.ReplyKeyboardMarkup) error
-	SendMessageWithFiles(chatID int64, filesInfo []repository.FileInfo, caption string) error
+
+	SendMessage(chatID int64,
+		message string,
+		replyMarkup *tgbotapi.ReplyKeyboardMarkup) error
+
+	SendMessageWithFile(chatID int64,
+		fileInfo repository.FileInfo,
+		caption string,
+		replyMarkup *tgbotapi.ReplyKeyboardMarkup) error
+
+	SendMessageWithFiles(chatID int64,
+		filesInfo []repository.FileInfo, caption string) error
 }
 
 //

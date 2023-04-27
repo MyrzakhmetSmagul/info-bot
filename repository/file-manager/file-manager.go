@@ -1,6 +1,7 @@
 package file_manager
 
 import (
+	"log"
 	"os"
 	"path"
 	"tg-bot/lib/e"
@@ -16,6 +17,7 @@ func New(basePath string) FileManager {
 
 func (f *FileManager) GetFile(filename string) ([]byte, error) {
 	file, err := os.ReadFile(path.Join(f.basePath, filename))
+	log.Println(path.Join(f.basePath, filename))
 	if err != nil {
 		return nil, e.Wrap("can't get file", err)
 	}

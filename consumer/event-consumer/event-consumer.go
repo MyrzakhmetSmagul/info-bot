@@ -12,7 +12,8 @@ type Consumer struct {
 	batchSize int
 }
 
-func New(fetcher events.Fetcher, processor events.Processor, batchSize int) Consumer {
+func New(fetcher events.Fetcher, processor events.Processor,
+	batchSize int) Consumer {
 	return Consumer{
 		fetcher:   fetcher,
 		processor: processor,

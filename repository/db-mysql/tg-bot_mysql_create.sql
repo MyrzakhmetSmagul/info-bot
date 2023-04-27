@@ -42,8 +42,8 @@ CREATE TABLE IF NOT EXISTS `file`
 (
     `id`         INT                            NOT NULL AUTO_INCREMENT,
     `message_id` INT                            NOT NULL,
-    `file_name`  ENUM ("photo", "doc", "video") NOT NULL,
-    `file_type`  TEXT                           NOT NULL,
+    `file_name`  TEXT                           NOT NULL,
+    `file_type`  ENUM ("photo", "doc", "video") NOT NULL,
     PRIMARY KEY (`id`),
     CONSTRAINT `file_fk0` FOREIGN KEY (`message_id`) REFERENCES `message` (`id`)
 );

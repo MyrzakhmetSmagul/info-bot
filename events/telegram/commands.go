@@ -113,6 +113,10 @@ func (p *Processor) sendMessage(chatID int64, trigger string, lang repository.La
 	if filesInfo == nil || len(filesInfo) == 0 {
 		err = p.tg.SendMessage(chatID, msg.Text, replyMarkup)
 	} else {
+		filesInfo, err = p.getFiles(filesInfo)
+		if err != nil {
+			return repository.DefaultState, err
+		}
 		if len(filesInfo) == 1 {
 			err = p.tg.SendMessageWithFile(chatID, filesInfo[0], msg.Text, replyMarkup)
 		} else {
@@ -144,13 +148,13 @@ func (p *Processor) getMessageAndReply(text string, lang repository.Lang) (*repo
 	return msg, replyMarkup, nil
 }
 
-func (p *Processor) getFiles(filesInfo []*repository.FileInfo) error {
+func (p *Processor) getFiles(filesInfo []repository.FileInfo) ([]repository.FileInfo, error) {
 	for i, fileInfo := range filesInfo {
 		content, err := p.fileManager.GetFile(fileInfo.Name)
 		if err != nil {
-			return fmt.Errorf("can't get files %w", err)
+			return nil, fmt.Errorf("can't get files %w", err)
 		}
 		filesInfo[i].Content = content
 	}
-	return nil
+	return filesInfo, nil
 }
