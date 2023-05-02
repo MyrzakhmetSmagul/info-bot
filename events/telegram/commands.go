@@ -12,7 +12,9 @@ import (
 )
 
 const (
+	language                     = "/language"
 	choiceUnavailableLangTrigger = "choiceUnavailableLang"
+	question                     = "/question"
 	askQuestionDoneTrigger       = "askQuestionDone"
 	undefinedCommandTrigger      = "undefinedCommand"
 )

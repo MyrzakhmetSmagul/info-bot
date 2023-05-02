@@ -61,10 +61,10 @@ func (c client) SendMessage(chatID int64, message string, replyMarkup *tgbotapi.
 	return nil
 }
 
-func (c client) SendMessageWithFile(chatID int64, fileInfo repository.FileInfo, caption string, replyMarkup *tgbotapi.ReplyKeyboardMarkup) error {
+func (c client) SendMessageWithFile(chatID int64, fileInfo repository.File, caption string, replyMarkup *tgbotapi.ReplyKeyboardMarkup) error {
 	msg := make([]tgbotapi.Chattable, 1)
 	file := tgbotapi.FileBytes{
-		Name:  fileInfo.Name,
+		Name:  fileInfo.FileName,
 		Bytes: fileInfo.Content,
 	}
 
@@ -78,7 +78,7 @@ func (c client) SendMessageWithFile(chatID int64, fileInfo repository.FileInfo, 
 		reply = tgbotapi.NewReplyKeyboard(replyMarkup.Keyboard...)
 	}
 
-	switch fileInfo.Type {
+	switch fileInfo.FileType {
 	case repository.Photo:
 		photo := tgbotapi.NewPhoto(chatID, file)
 		photo.Caption = caption
@@ -109,18 +109,15 @@ func (c client) SendMessageWithFile(chatID int64, fileInfo repository.FileInfo, 
 	return nil
 }
 
-func (c *client) SendMessageWithFiles(chatID int64, filesInfo []repository.FileInfo, caption string) error {
-	if len(filesInfo) == 1 {
-		//do something
-	}
+func (c *client) SendMessageWithFiles(chatID int64, filesInfo []repository.File, caption string) error {
 	files := make([]interface{}, 0)
 	for i, fileInfo := range filesInfo {
 		var temp interface{}
 		file := tgbotapi.FileBytes{
-			Name:  fileInfo.Name,
+			Name:  fileInfo.FileName,
 			Bytes: fileInfo.Content,
 		}
-		switch fileInfo.Type {
+		switch fileInfo.FileType {
 		case repository.Photo:
 			photo := tgbotapi.NewInputMediaPhoto(file)
 			if i == 0 {
