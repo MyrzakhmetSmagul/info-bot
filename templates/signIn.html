@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Portal</title>
+  <link rel="stylesheet" href="/assets/css/signIn.css">
+</head>
+<body>
+<a href="/">Home</a>
+<div class="login-box">
+  <h2>Sign in</h2>
+  <p class="message">{{.Message}}</p>
+  <form action="/signIn" method="post">
+    <label for="email">Email</label>
+    <input type="email" name="email" id="email" required/>
+    <label for="password">Password</label>
+    <input type="password" name="password" id="password" required/>
+    <input type="submit" value="Sign in" />
+  </form>
+</div>
+</body>
+</html>
