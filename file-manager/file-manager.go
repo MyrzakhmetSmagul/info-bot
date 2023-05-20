@@ -26,7 +26,7 @@ func (f *FileManager) GetFile(filename string) ([]byte, error) {
 }
 
 func (f *FileManager) SaveFile(filename string, content []byte) error {
-	file, err := os.Create(path.Join(f.basePath, filename))
+	file, err := os.Create(f.getPath(filename))
 	if err != nil {
 		return fmt.Errorf("create file was failed: %w", err)
 	}
@@ -39,4 +39,17 @@ func (f *FileManager) SaveFile(filename string, content []byte) error {
 	}
 
 	return nil
+}
+
+func (f *FileManager) DeleteFile(fileName string) error {
+	err := os.Remove(f.getPath(fileName))
+	if err != nil {
+		return fmt.Errorf("delete file was failed: %w", err)
+	}
+
+	return nil
+}
+
+func (f *FileManager) getPath(fileName string) string {
+	return path.Join(f.basePath, fileName)
 }

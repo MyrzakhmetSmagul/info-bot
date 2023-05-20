@@ -13,12 +13,12 @@ type Client interface {
 		replyMarkup *tgbotapi.ReplyKeyboardMarkup) error
 
 	SendMessageWithFile(chatID int64,
-		fileInfo repository.File,
+		fileInfo *repository.File,
 		caption string,
 		replyMarkup *tgbotapi.ReplyKeyboardMarkup) error
 
 	SendMessageWithFiles(chatID int64,
-		filesInfo []repository.File, caption string) error
+		filesInfo []*repository.File, caption string) error
 }
 
 //
