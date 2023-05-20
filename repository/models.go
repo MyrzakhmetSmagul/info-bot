@@ -14,6 +14,7 @@ const (
 var (
 	ErrUndefinedFileType = errors.New("undefined file type")
 	ErrStateNotFound     = errors.New("state not found")
+	ErrUndefinedLanguage = errors.New("undefined language")
 )
 
 type State struct {
@@ -22,24 +23,23 @@ type State struct {
 }
 
 type Message struct {
-	ID             int
-	MessageTrigger string
-	Text           string
-	Language       string
-	StateID        int
+	ID         int
+	MsgTrigger string
+	Text       string
+	Lang       string
 }
 
-type Keyboard struct {
-	ID     int
-	KzText string
-	RuText string
-	EnText string
+type MessageGroup struct {
+	ID    int
+	KzMsg Message
+	RuMsg Message
+	EnMsg Message
 }
 
 type ReplyMarkup struct {
-	ID         int
-	MessageID  int
-	KeyboardID int
+	ID      int
+	MsgID   int
+	StateID int
 }
 
 type Command struct {
@@ -49,24 +49,24 @@ type Command struct {
 }
 
 type File struct {
-	ID        int
-	MessageID int
-	FileName  string
-	FileType  string
-	Content   []byte
+	ID         int
+	MsgGroupID int
+	FileName   string
+	FileType   string
+	Content    []byte
 }
 
 type Chat struct {
-	ChatID   int64
-	Active   bool
-	Language string
-	StateID  int
+	ChatID  int64
+	Active  bool
+	Lang    string
+	StateID int
+	CMD     bool
 }
 
 type Transition struct {
-	ID        int
-	Name      string
-	FromState State
-	ToState   State
-	Message   Message
+	ID          int
+	FromStateID int
+	ToStateID   int
+	MsgTrigger  string
 }

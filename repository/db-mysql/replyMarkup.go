@@ -1,83 +1,73 @@
 package db_mysql
 
 import (
-	"database/sql"
-	"errors"
 	"fmt"
 	"tg-bot/repository"
 )
 
-func (s *storage) CreateReplyMarkup(replyMarkup *repository.ReplyMarkup) error {
-	query := `INSERT INTO reply_markup(message_id, keyboard_id)
-				VALUES (?, ?)`
+func (s storage) CreateReplyMarkup(rm *repository.ReplyMarkup) error {
+	query := `INSERT INTO reply_markup(state_id, msg_group_id) VALUES (?, ?)`
 
-	exec, err := s.db.Exec(query, replyMarkup.MessageID, replyMarkup.KeyboardID)
+	exec, err := s.db.Exec(query, rm.StateID, rm.MsgID)
 	if err != nil {
-		return fmt.Errorf("can't create reply markup: %w", err)
+		return fmt.Errorf("create replyMarkup was failed: %w", err)
 	}
 
 	id, err := exec.LastInsertId()
 	if err != nil {
-		return fmt.Errorf("can't create reply markup: %w", err)
+		return fmt.Errorf("create replyMarkup was failed: %w", err)
 	}
 
-	replyMarkup.ID = int(id)
-	return nil
-}
-
-func (s *storage) UpdateReplyMarkup(replyMarkup *repository.ReplyMarkup) error {
-	//TODO implement me
-	panic("implement me")
-}
-
-func (s *storage) DeleteReplyMarkup(replyMarkupID int) error {
-	query := `DELETE FROM reply_markup WHERE id = ?`
-	_, err := s.db.Exec(query, replyMarkupID)
-	if err != nil {
-		return fmt.Errorf("can't delete reply markup: %w", err)
-	}
+	rm.ID = int(id)
 
 	return nil
 }
 
-func (s *storage) GetReplyMarkupByID(replyMarkupID int) (*repository.ReplyMarkup, error) {
-	query := `SELECT message_id, keyboard_id FROM reply_markup WHERE id=?`
+func (s storage) GetReplyMarkupByID(id int) (repository.ReplyMarkup, error) {
+	query := `SELECT state_id, msg_group_id FROM reply_markup WHERE id=?`
 
-	replyMarkup := &repository.ReplyMarkup{ID: replyMarkupID}
-	err := s.db.QueryRow(query, replyMarkupID).Scan(&replyMarkup.MessageID, &replyMarkup.KeyboardID)
+	rm := repository.ReplyMarkup{ID: id}
+	err := s.db.QueryRow(query, id).Scan(&rm.StateID, &rm.MsgID)
 	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
-			return nil, nil
-		}
-
-		return nil, fmt.Errorf("can't get reply markup by id: %w", err)
+		return repository.ReplyMarkup{}, fmt.Errorf("get replyMarkup by id was failed: %w", err)
 	}
 
-	return nil, nil
+	return rm, nil
 }
 
-func (s *storage) GetAllReplyMarkups() ([]*repository.ReplyMarkup, error) {
-	query := `SELECT id, message_id, keyboard_id FROM reply_markup`
+func (s *storage) GetReplyMarkupsOfState(stateID int) ([]repository.ReplyMarkup, error) {
+	query := `SELECT id, msg_group_id FROM reply_markup WHERE state_id=?`
 
-	replyMarkups := make([]*repository.ReplyMarkup, 0)
-	rows, err := s.db.Query(query)
+	rows, err := s.db.Query(query, stateID)
 	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
-			return nil, nil
-		}
-		return nil, fmt.Errorf("can't get all reply markups: %w", err)
+		return nil, fmt.Errorf("get replyMarkups of state was failed: %w", err)
 	}
 
+	rms := make([]repository.ReplyMarkup, 0)
 	defer rows.Close()
 
 	for rows.Next() {
-		replyMarkup := &repository.ReplyMarkup{}
-		err = rows.Scan(&replyMarkup.ID, &replyMarkup.MessageID, &replyMarkup.KeyboardID)
+		rm := repository.ReplyMarkup{StateID: stateID}
+
+		err = rows.Scan(&rm.ID, &rm.MsgID)
 		if err != nil {
-			return nil, fmt.Errorf("can't get all reply markups: %w", err)
+			return nil, fmt.Errorf("get replyMarkups of state was failed: %w", err)
 		}
-		replyMarkups = append(replyMarkups, replyMarkup)
+		rms = append(rms, rm)
 	}
 
-	return replyMarkups, nil
+	return rms, nil
+}
+
+func (s storage) DeleteReplyMarkup(replyMarkupID int) error {
+	query := `DELETE FROM reply_markup WHERE id=?`
+
+	//you should check how many rows affected
+	//if affected rows is zero, return custom error which describe it
+	_, err := s.db.Exec(query, replyMarkupID)
+	if err != nil {
+		return fmt.Errorf("delete replyMarkup was failed: %w", err)
+	}
+
+	return nil
 }
