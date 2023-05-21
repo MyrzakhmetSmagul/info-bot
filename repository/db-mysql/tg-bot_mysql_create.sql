@@ -15,7 +15,7 @@ CREATE TABLE IF NOT EXISTS `message`
     `msg_trigger` VARCHAR(255) NOT NULL,
     `text`        TEXT         NOT NULL,
     `lang`        ENUM ("kz", "ru", "en"),
-    PRIMARY KEY (`id`),
+    PRIMARY KEY (`id`)
 );
 
 CREATE TABLE IF NOT EXISTS `message_group`

@@ -14,6 +14,7 @@ type MessageRepository interface {
 	CreateMessage(msg *Message) error
 	UpdateMessage(msg Message) error
 	GetMessage(trigger, lang string) (Message, error)
+	GetMessageByID(id int) (Message, error)
 	GetAllMessages() ([]Message, error)
 	DeleteMessage(msgID int) error
 }

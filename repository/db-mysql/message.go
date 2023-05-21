@@ -10,12 +10,12 @@ func (s storage) CreateMessage(msg *repository.Message) error {
 
 	exec, err := s.db.Exec(query, msg.MsgTrigger, msg.Text, msg.Lang)
 	if err != nil {
-		return fmt.Errorf("create message was failed: %w", err)
+		return fmt.Errorf("create message failed: %w", err)
 	}
 
 	id, err := exec.LastInsertId()
 	if err != nil {
-		return fmt.Errorf("create message was failed: %w", err)
+		return fmt.Errorf("create message failed: %w", err)
 	}
 
 	msg.ID = int(id)
@@ -29,7 +29,7 @@ func (s storage) UpdateMessage(msg repository.Message) error {
 	//if affected rows is zero, return custom error which describe it
 	_, err := s.db.Exec(query, msg.MsgTrigger, msg.Text, msg.ID)
 	if err != nil {
-		return fmt.Errorf("update message was failed: %w", err)
+		return fmt.Errorf("update message failed: %w", err)
 	}
 
 	return nil
@@ -41,7 +41,19 @@ func (s storage) GetMessage(trigger, lang string) (repository.Message, error) {
 	msg := repository.Message{MsgTrigger: trigger, Lang: lang}
 	err := s.db.QueryRow(query, trigger, lang).Scan(&msg.ID, &msg.Text)
 	if err != nil {
-		return repository.Message{}, fmt.Errorf("get message was failed: %w", err)
+		return repository.Message{}, fmt.Errorf("get message failed: %w", err)
+	}
+
+	return msg, nil
+}
+
+func (s storage) GetMessageByID(id int) (repository.Message, error) {
+	query := `SELECT msg_trigger, text, lang FROM message WHERE id=?`
+
+	msg := repository.Message{ID: id}
+	err := s.db.QueryRow(query, id).Scan(&msg.MsgTrigger, &msg.Text, &msg.Lang)
+	if err != nil {
+		return repository.Message{}, fmt.Errorf("get message by id failed: %w", err)
 	}
 
 	return msg, nil
@@ -53,7 +65,7 @@ func (s storage) GetAllMessages() ([]repository.Message, error) {
 	msgs := make([]repository.Message, 0)
 	rows, err := s.db.Query(query)
 	if err != nil {
-		return nil, fmt.Errorf("get all messages was failed: %w", err)
+		return nil, fmt.Errorf("get all messages failed: %w", err)
 	}
 
 	defer rows.Close()
@@ -62,7 +74,7 @@ func (s storage) GetAllMessages() ([]repository.Message, error) {
 		msg := repository.Message{}
 		err = rows.Scan(&msg.ID, &msg.MsgTrigger, &msg.Text, &msg.Lang)
 		if err != nil {
-			return nil, fmt.Errorf("get all messages was failed: %w", err)
+			return nil, fmt.Errorf("get all messages failed: %w", err)
 		}
 		msgs = append(msgs, msg)
 	}
@@ -77,7 +89,7 @@ func (s storage) DeleteMessage(msgID int) error {
 	//if affected rows is zero, return custom error which describe it
 	_, err := s.db.Exec(query, msgID)
 	if err != nil {
-		return fmt.Errorf("delete message was failed: %w", err)
+		return fmt.Errorf("delete message failed: %w", err)
 	}
 
 	return nil

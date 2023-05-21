@@ -10,12 +10,12 @@ func (s storage) AddFileToMessage(file *repository.File) error {
 
 	exec, err := s.db.Exec(query, file.MsgGroupID, file.FileName, file.FileType)
 	if err != nil {
-		return fmt.Errorf("add file to message was failed: %w", err)
+		return fmt.Errorf("add file to message failed: %w", err)
 	}
 
 	id, err := exec.LastInsertId()
 	if err != nil {
-		return fmt.Errorf("add file to message was failed: %w", err)
+		return fmt.Errorf("add file to message failed: %w", err)
 	}
 
 	file.ID = int(id)
@@ -29,7 +29,7 @@ func (s storage) GetFileByID(fileID int) (repository.File, error) {
 	file := repository.File{ID: fileID}
 	err := s.db.QueryRow(query, fileID).Scan(&file.MsgGroupID, &file.FileName, &file.FileType)
 	if err != nil {
-		return repository.File{}, fmt.Errorf("get file by id was failed: %w", err)
+		return repository.File{}, fmt.Errorf("get file by id failed: %w", err)
 	}
 
 	return file, err
@@ -67,7 +67,7 @@ func (s storage) DeleteFile(fileID int) error {
 	//if affected rows is zero, return custom error which describe it
 	_, err := s.db.Exec(query, fileID)
 	if err != nil {
-		return fmt.Errorf("delete file was failed: %w", err)
+		return fmt.Errorf("delete file failed: %w", err)
 	}
 
 	return nil

@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Portal</title>
+    <link rel="stylesheet" href="/assets/css/create.css">
+</head>
+<body>
+<div id="form-container">
+    <form method="post" action="/create/message-group">
+        <h2 class="heading">Language Қазақ</h2>
+        <div id="kzMessage">
+            <label for="kzMsgTrigger">Message trigger</label>
+            <input id="kzMsgTrigger" name="kzMsgTrigger" required="true" placeholder="Message Trigger..." type="text">
+            <label for="kzText">Text</label>
+            <textarea id="kzText" name="kzText" placeholder="Text..." required="true"></textarea>
+        </div>
+        <br>
+        <h2 class="heading">Language Русский</h2>
+        <div id="ruMessage">
+            <label for="ruMsgTrigger">Message trigger</label>
+            <input id="ruMsgTrigger" name="ruMsgTrigger" required="true" placeholder="Message Trigger..." type="text">
+            <label for="ruText">Text</label>
+            <textarea id="ruText" name="ruText" placeholder="Text..." required="true"></textarea>
+        </div>
+        <br>
+        <h2 class="heading">Language English</h2>
+        <div id="enMessage">
+            <label for="enMsgTrigger">Message trigger</label>
+            <input id="enMsgTrigger" name="enMsgTrigger" required="true" placeholder="Message Trigger..." type="text">
+            <label for="enText">Text</label>
+            <textarea id="enText" name="enText" placeholder="Text..." required="true"></textarea>
+        </div>
+        <br>
+        <input type="submit" value="Создать группу сообщении">
+    </form>
+</div>
+<div id="links">
+    <a href="/create/">Назад</a>
+</div>
+</body>
+</html>

@@ -10,7 +10,7 @@ func (s storage) CreateChat(chat repository.Chat) error {
 
 	_, err := s.db.Exec(query, chat.ChatID, chat.Active, chat.Lang, chat.StateID, chat.CMD)
 	if err != nil {
-		return fmt.Errorf("create chat was failed: %w", err)
+		return fmt.Errorf("create chat failed: %w", err)
 	}
 
 	return nil
@@ -23,7 +23,7 @@ func (s storage) EnableChat(chatID int64) error {
 	//if affected rows is zero, return custom error which describe it
 	_, err := s.db.Exec(query, chatID)
 	if err != nil {
-		return fmt.Errorf("enable chat was failed: %w", err)
+		return fmt.Errorf("enable chat failed: %w", err)
 	}
 
 	return nil
@@ -36,7 +36,7 @@ func (s storage) DisableChat(chatID int64) error {
 	//if affected rows is zero, return custom error which describe it
 	_, err := s.db.Exec(query, chatID)
 	if err != nil {
-		return fmt.Errorf("disable chat was failed: %w", err)
+		return fmt.Errorf("disable chat failed: %w", err)
 	}
 
 	return nil
@@ -49,7 +49,7 @@ func (s storage) EnableCmd(chatID int64) error {
 	//if affected rows is zero, return custom error which describe it
 	_, err := s.db.Exec(query, chatID)
 	if err != nil {
-		return fmt.Errorf("enable cmd was failed: %w", err)
+		return fmt.Errorf("enable cmd failed: %w", err)
 	}
 
 	return nil
@@ -60,7 +60,7 @@ func (s storage) DisableCmd(chatID int64) error {
 
 	_, err := s.db.Exec(query, chatID)
 	if err != nil {
-		return fmt.Errorf("disable cmd was failed: %w", err)
+		return fmt.Errorf("disable cmd failed: %w", err)
 	}
 
 	return nil
@@ -73,7 +73,7 @@ func (s storage) ChangeChatLang(chatID int64, lang string) error {
 	//if affected rows is zero, return custom error which describe it
 	_, err := s.db.Exec(query, lang, chatID)
 	if err != nil {
-		return fmt.Errorf("change chat lang was failed: %w", err)
+		return fmt.Errorf("change chat lang failed: %w", err)
 	}
 
 	return nil
@@ -86,7 +86,7 @@ func (s storage) ChangeChatState(chatID int64, stateID int) error {
 	//if affected rows is zero, return custom error which describe it
 	_, err := s.db.Exec(query, stateID, chatID)
 	if err != nil {
-		return fmt.Errorf("change state was failed: %w", err)
+		return fmt.Errorf("change state failed: %w", err)
 	}
 
 	return nil
@@ -98,7 +98,7 @@ func (s storage) GetChat(chatID int64) (repository.Chat, error) {
 
 	err := s.db.QueryRow(query, chatID).Scan(&chat.Active, &chat.Lang, &chat.StateID, &chat.CMD)
 	if err != nil {
-		return repository.Chat{}, fmt.Errorf("get chat was failed: %w", err)
+		return repository.Chat{}, fmt.Errorf("get chat failed: %w", err)
 	}
 
 	return chat, nil
@@ -109,7 +109,7 @@ func (s storage) GetAllChats() ([]repository.Chat, error) {
 
 	rows, err := s.db.Query(query)
 	if err != nil {
-		return nil, fmt.Errorf("get all chats was failed: %w", err)
+		return nil, fmt.Errorf("get all chats failed: %w", err)
 	}
 
 	chats := make([]repository.Chat, 0)
@@ -120,7 +120,7 @@ func (s storage) GetAllChats() ([]repository.Chat, error) {
 
 		err = rows.Scan(&chat.ChatID, &chat.Active, &chat.Lang, &chat.StateID, &chat.CMD)
 		if err != nil {
-			return nil, fmt.Errorf("get all chats was failed: %w", err)
+			return nil, fmt.Errorf("get all chats failed: %w", err)
 		}
 
 		chats = append(chats, chat)
@@ -136,7 +136,7 @@ func (s storage) DeleteChat(chatID int64) error {
 	//if affected rows is zero, return custom error which describe it
 	_, err := s.db.Exec(query, chatID)
 	if err != nil {
-		return fmt.Errorf("delete chat was failed: %w", err)
+		return fmt.Errorf("delete chat failed: %w", err)
 	}
 
 	return nil

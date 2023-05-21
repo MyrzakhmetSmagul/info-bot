@@ -10,12 +10,12 @@ func (s storage) CreateReplyMarkup(rm *repository.ReplyMarkup) error {
 
 	exec, err := s.db.Exec(query, rm.StateID, rm.MsgID)
 	if err != nil {
-		return fmt.Errorf("create replyMarkup was failed: %w", err)
+		return fmt.Errorf("create replyMarkup failed: %w", err)
 	}
 
 	id, err := exec.LastInsertId()
 	if err != nil {
-		return fmt.Errorf("create replyMarkup was failed: %w", err)
+		return fmt.Errorf("create replyMarkup failed: %w", err)
 	}
 
 	rm.ID = int(id)
@@ -29,7 +29,7 @@ func (s storage) GetReplyMarkupByID(id int) (repository.ReplyMarkup, error) {
 	rm := repository.ReplyMarkup{ID: id}
 	err := s.db.QueryRow(query, id).Scan(&rm.StateID, &rm.MsgID)
 	if err != nil {
-		return repository.ReplyMarkup{}, fmt.Errorf("get replyMarkup by id was failed: %w", err)
+		return repository.ReplyMarkup{}, fmt.Errorf("get replyMarkup by id failed: %w", err)
 	}
 
 	return rm, nil
@@ -40,7 +40,7 @@ func (s *storage) GetReplyMarkupsOfState(stateID int) ([]repository.ReplyMarkup,
 
 	rows, err := s.db.Query(query, stateID)
 	if err != nil {
-		return nil, fmt.Errorf("get replyMarkups of state was failed: %w", err)
+		return nil, fmt.Errorf("get replyMarkups of state failed: %w", err)
 	}
 
 	rms := make([]repository.ReplyMarkup, 0)
@@ -51,7 +51,7 @@ func (s *storage) GetReplyMarkupsOfState(stateID int) ([]repository.ReplyMarkup,
 
 		err = rows.Scan(&rm.ID, &rm.MsgID)
 		if err != nil {
-			return nil, fmt.Errorf("get replyMarkups of state was failed: %w", err)
+			return nil, fmt.Errorf("get replyMarkups of state failed: %w", err)
 		}
 		rms = append(rms, rm)
 	}
@@ -66,7 +66,7 @@ func (s storage) DeleteReplyMarkup(replyMarkupID int) error {
 	//if affected rows is zero, return custom error which describe it
 	_, err := s.db.Exec(query, replyMarkupID)
 	if err != nil {
-		return fmt.Errorf("delete replyMarkup was failed: %w", err)
+		return fmt.Errorf("delete replyMarkup failed: %w", err)
 	}
 
 	return nil

@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Portal</title>
+    <link rel="stylesheet" href="/assets/css/create.css">
+</head>
+<body>
+<div id="form-container">
+    <form method="post" action="/create/transition">
+        <label for="MsgTrigger">Message Trigger</label>
+        <input id="MsgTrigger" name="MsgTrigger" required="true" placeholder="Message Trigger..." type="text">
+        <label for="from-state">From State</label>
+        <select id="from-state" name="fromState" required="true">
+            <option value="" disabled selected>Выберите состояние</option>
+            {{ range .States }}
+            <option value="{{.ID}}">{{.Name}}</option>
+            {{end}}
+        </select>
+        <label for="to-state">To State</label>
+        <select id="to-state" name="toState" required="true">
+            <option value="" disabled selected>Выберите состояние</option>
+            {{ range .States }}
+            <option value="{{.ID}}">{{.Name}}</option>
+            {{end}}
+        </select>
+        <input type="submit" value="Создать переход">
+    </form>
+</div>
+<div id="links">
+    <a href="/create/">Назад</a>
+</div>
+<script src="/assets/js/createTransition.js"></script>
+</body>
+</html>

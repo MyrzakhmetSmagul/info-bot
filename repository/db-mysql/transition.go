@@ -6,16 +6,25 @@ import (
 )
 
 func (s storage) CreateTransition(transition *repository.Transition) error {
-	query := `INSERT INTO transition(msg_trigger, from_state, toState) VALUES (?, ?, ?)`
+	query := `INSERT INTO transition (msg_trigger, from_state, to_state)
+SELECT ?, ?, ?
+FROM dual
+WHERE NOT EXISTS (
+    SELECT 1
+    FROM transition
+    WHERE msg_trigger = ?
+        AND from_state = ?
+        AND to_state = ?
+)`
 
-	exec, err := s.db.Exec(query, transition.MsgTrigger, transition.FromStateID, transition.ToStateID)
+	exec, err := s.db.Exec(query, transition.MsgTrigger, transition.FromStateID, transition.ToStateID, transition.MsgTrigger, transition.FromStateID, transition.ToStateID)
 	if err != nil {
-		return fmt.Errorf("create transition was failed: %w", err)
+		return fmt.Errorf("create transition failed: %w", err)
 	}
 
 	id, err := exec.LastInsertId()
 	if err != nil {
-		return fmt.Errorf("create transition was failed: %w", err)
+		return fmt.Errorf("create transition failed: %w", err)
 	}
 
 	transition.ID = int(id)
@@ -29,7 +38,7 @@ func (s storage) GetTransition(fromStateID int, msgTrigger string) (repository.T
 	transition := repository.Transition{FromStateID: fromStateID, MsgTrigger: msgTrigger}
 	err := s.db.QueryRow(query, fromStateID, msgTrigger).Scan(&transition.ID, &transition.ToStateID)
 	if err != nil {
-		return repository.Transition{}, fmt.Errorf("get transition was failed: %w", err)
+		return repository.Transition{}, fmt.Errorf("get transition failed: %w", err)
 	}
 
 	return transition, nil
@@ -40,7 +49,7 @@ func (s storage) GetAllTransitions() ([]repository.Transition, error) {
 
 	rows, err := s.db.Query(query)
 	if err != nil {
-		return nil, fmt.Errorf("get all transitions was failed: %w", err)
+		return nil, fmt.Errorf("get all transitions failed: %w", err)
 	}
 
 	transitions := make([]repository.Transition, 0)
@@ -51,7 +60,7 @@ func (s storage) GetAllTransitions() ([]repository.Transition, error) {
 
 		err = rows.Scan(&transition.ID, &transition.MsgTrigger, &transition.FromStateID, &transition.ToStateID)
 		if err != nil {
-			return nil, fmt.Errorf("get all transitions was failed: %w", err)
+			return nil, fmt.Errorf("get all transitions failed: %w", err)
 		}
 
 		transitions = append(transitions, transition)
@@ -67,7 +76,7 @@ func (s storage) DeleteTransition(transitionID int) error {
 	//if affected rows is zero, return custom error which describe it
 	_, err := s.db.Exec(query, transitionID)
 	if err != nil {
-		return fmt.Errorf("delete transition was failed: %w", err)
+		return fmt.Errorf("delete transition failed: %w", err)
 	}
 
 	return nil

@@ -16,7 +16,7 @@ type client struct {
 func New(token string) telegram.Client {
 	bot, err := tgbotapi.NewBotAPI(token)
 	if err != nil {
-		log.Fatal("create new telegram client was failed", err)
+		log.Fatal("create new telegram client failed", err)
 	}
 
 	return &client{

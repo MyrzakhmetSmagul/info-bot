@@ -6,16 +6,24 @@ import (
 )
 
 func (s storage) CreateState(state *repository.State) error {
-	query := `INSERT INTO state(name) VALUES (?)`
+	query := `
+INSERT INTO state(name)
+SELECT ?
+FROM dual
+WHERE NOT EXISTS (
+    SELECT 1
+    FROM state
+    WHERE name = ?
+)`
 
-	exec, err := s.db.Exec(query, state.Name)
+	exec, err := s.db.Exec(query, state.Name, state.Name)
 	if err != nil {
-		return fmt.Errorf("create state was failed: %w", err)
+		return fmt.Errorf("create state failed: %w", err)
 	}
 
 	id, err := exec.LastInsertId()
 	if err != nil {
-		return fmt.Errorf("create state was failed: %w", err)
+		return fmt.Errorf("create state failed: %w", err)
 	}
 
 	state.ID = int(id)
@@ -27,7 +35,7 @@ func (s storage) GetState(id int) (repository.State, error) {
 	state := repository.State{ID: id}
 	err := s.db.QueryRow(query, id).Scan(&state.Name)
 	if err != nil {
-		return repository.State{}, fmt.Errorf("get state was failed: %w", err)
+		return repository.State{}, fmt.Errorf("get state failed: %w", err)
 	}
 
 	return state, nil
@@ -38,7 +46,7 @@ func (s storage) GetAllStates() ([]repository.State, error) {
 
 	rows, err := s.db.Query(query)
 	if err != nil {
-		return nil, fmt.Errorf("get all states was failed: %w", err)
+		return nil, fmt.Errorf("get all states failed: %w", err)
 	}
 
 	states := make([]repository.State, 0)
@@ -49,7 +57,7 @@ func (s storage) GetAllStates() ([]repository.State, error) {
 
 		err = rows.Scan(&state.ID, &state.Name)
 		if err != nil {
-			return nil, fmt.Errorf("get all states was failed: %w", err)
+			return nil, fmt.Errorf("get all states failed: %w", err)
 		}
 		states = append(states, state)
 	}
@@ -62,7 +70,7 @@ func (s storage) DeleteStates(stateID int) error {
 
 	_, err := s.db.Exec(query, stateID)
 	if err != nil {
-		return fmt.Errorf("delete state was failed: %w", err)
+		return fmt.Errorf("delete state failed: %w", err)
 	}
 
 	return nil

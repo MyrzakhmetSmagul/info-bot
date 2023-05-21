@@ -6,7 +6,9 @@ import (
 	"github.com/redis/go-redis/v9"
 	"log"
 	"os"
+	file_manager "tg-bot/file-manager"
 	"tg-bot/portal"
+	db_mysql "tg-bot/repository/db-mysql"
 )
 
 type config struct {
@@ -17,14 +19,13 @@ type config struct {
 }
 
 func main() {
-	portal.Run()
-	//portal.Start()
-	//cnf := getConfig()
+	cnf := getConfig()
+	site := portal.NewPortal(db_mysql.New(cnf.MysqlConfig), file_manager.New(cnf.BasePath))
+	site.Run()
 	//
 	//eventsProcessor := telegram.New(
 	//	tg.New(cnf.Token),
-	//	dbMysql.New(cnf.MysqlConfig),
-	//	file_manager.New(cnf.BasePath),
+
 	//	redis.NewClient(&cnf.RedisOptions),
 	//)
 	//
