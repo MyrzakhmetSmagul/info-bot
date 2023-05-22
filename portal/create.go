@@ -123,3 +123,46 @@ func (p *Portal) createReplyMarkup(c *gin.Context) {
 
 	c.Redirect(http.StatusFound, "/create/")
 }
+
+func (p *Portal) addFileToMsgGroup(c *gin.Context) {
+	file := repository.File{}
+	var err error
+	language := c.PostForm("language")
+	temp := c.PostForm(language + "MsgGroup")
+	file.MsgGroupID, err = strconv.Atoi(temp)
+	if err != nil {
+		c.AbortWithError(http.StatusBadRequest, err)
+		return
+	}
+	file.FileType = c.PostForm("fileType")
+	fmt.Println("************************************************\nfile.FileType =", file.FileType)
+	// Handle file upload
+	formFile, err := c.FormFile("fileUpload")
+	if err != nil {
+		log.Println("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n", err)
+		c.AbortWithError(http.StatusBadRequest, err)
+		return
+	}
+	log.Println()
+	file.FileName = formFile.Filename
+	// Save the uploaded file to a desired location
+	err = c.SaveUploadedFile(formFile, p.basePath+file.FileName)
+	if err != nil {
+		log.Println("c.SaveUploadedFile", err)
+		c.AbortWithError(http.StatusInternalServerError, err)
+		return
+	}
+
+	err = p.repository.AddFileToMessage(&file)
+	if err != nil {
+		cancelActionErr := p.fileManager.DeleteFile(file.FileName)
+		if cancelActionErr != nil {
+			err = fmt.Errorf("addFileToMessageError:%w\n%w", err, cancelActionErr)
+		}
+		log.Println(err)
+		c.AbortWithError(http.StatusInternalServerError, err)
+		return
+	}
+
+	c.Redirect(http.StatusFound, "/create/")
+}

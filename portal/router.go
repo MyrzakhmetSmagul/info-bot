@@ -7,7 +7,7 @@ import (
 	"net/http"
 )
 
-func (p *Portal) Run() error {
+func (p *Portal) Run(port string) error {
 	router := gin.Default()
 	router.LoadHTMLGlob("./templates/*")
 	router.Static("/assets", "./assets")
@@ -49,13 +49,30 @@ func (p *Portal) Run() error {
 			})
 
 		})
+		create.GET("/add/file", func(c *gin.Context) {
+			states, err := p.getAllStates()
+			if err != nil && !errors.Is(err, sql.ErrNoRows) {
+				c.AbortWithError(http.StatusInternalServerError, err)
+				return
+			}
+			messageGroups, err := p.getAllMessageGroup()
+			if err != nil && !errors.Is(err, sql.ErrNoRows) {
+				c.AbortWithError(http.StatusInternalServerError, err)
+				return
+			}
+			c.HTML(http.StatusOK, "addFile.html", gin.H{
+				"States":        states,
+				"MessageGroups": messageGroups,
+			})
+		})
 	}
 	{
 		create.POST("/message-group", p.createMsgGroup)
 		create.POST("/state", p.createState)
 		create.POST("/transition", p.createTransition)
 		create.POST("/reply-markup", p.createReplyMarkup)
+		create.POST("/add/file", p.addFileToMsgGroup)
 	}
-	router.Run()
+	router.Run(":" + port)
 	return nil
 }

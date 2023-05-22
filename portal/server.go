@@ -8,11 +8,13 @@ import (
 type Portal struct {
 	repository  repository.Repository
 	fileManager file_manager.FileManager
+	basePath    string
 }
 
-func NewPortal(repository repository.Repository, fileManager file_manager.FileManager) Portal {
+func NewPortal(repository repository.Repository, fileManager file_manager.FileManager, basePath string) Portal {
 	return Portal{
 		repository:  repository,
 		fileManager: fileManager,
+		basePath:    basePath,
 	}
 }

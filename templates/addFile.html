@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Portal</title>
+    <link rel="stylesheet" href="/assets/css/create.css">
 </head>
 <body>
 <div id="form-container">
@@ -34,16 +35,25 @@
             <option value="{{.ID}}">{{.EnMsg.MsgTrigger}}</option>
             {{end}}
         </select>
-        <select id="fileType">
+        <label for="fileType">Выберите тип файла</label>
+        <input id="fileTypeValue" type="hidden" name="fileType" required="true">
+        <select id="fileType" required="true">
             <option value="" disabled selected>Выберите тип</option>
             <option value="pdf">PDF</option>
             <option value="video">Video</option>
             <option value="photo">Photo</option>
         </select>
-        <label class="hidden">File</label>
-        <input id="file" class="hidden" type="file">
-        <input type="submit" class="hidden" value="Добавить файл">
+        <label id="fileLabel" class="hidden">File</label>
+        <p id="fileName" class="hidden"></p>
+        <input id="deleteFile" type="button" class="hidden" value="Удалить файл">
+        <input id="fileUpload" name="fileUpload" class="hidden" type="file" required="true">
+        <input id="submit" type="submit" class="hidden" value="Добавить файл">
     </form>
 </div>
+<div id="links">
+    <a href="/create/">Назад</a>
+</div>
+<script src="/assets/js/createReplyMarkup.js"></script>
+<script src="/assets/js/addFile.js"></script>
 </body>
 </html>

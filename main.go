@@ -16,12 +16,13 @@ type config struct {
 	BasePath     string        `json:"base_path"`
 	MysqlConfig  mysql.Config  `json:"mysql_config"`
 	RedisOptions redis.Options `json:"redis_options"`
+	Port         string        `json:"port"`
 }
 
 func main() {
 	cnf := getConfig()
-	site := portal.NewPortal(db_mysql.New(cnf.MysqlConfig), file_manager.New(cnf.BasePath))
-	site.Run()
+	site := portal.NewPortal(db_mysql.New(cnf.MysqlConfig), file_manager.New(cnf.BasePath), cnf.BasePath)
+	site.Run(cnf.Port)
 	//
 	//eventsProcessor := telegram.New(
 	//	tg.New(cnf.Token),
