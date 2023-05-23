@@ -35,7 +35,7 @@ type StateRepository interface {
 
 type TransitionRepository interface {
 	CreateTransition(transition *Transition) error
-	GetTransition(fromStateID int, msgTrigger string) (Transition, error)
+	GetTransition(fromStateID int, msgGroupID int) (Transition, error)
 	GetAllTransitions() ([]Transition, error)
 	DeleteTransition(transitionID int) error
 }

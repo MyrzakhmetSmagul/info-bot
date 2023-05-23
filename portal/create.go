@@ -14,7 +14,7 @@ func (p *Portal) createMsgGroup(c *gin.Context) {
 	messages := make([]repository.Message, 0)
 	for _, lang := range languages {
 		message := repository.Message{}
-		message.MsgTrigger = c.PostForm(lang + "MsgTrigger")
+		message.MsgTrigger = c.PostForm(lang + "MsgGroup")
 		message.Text = c.PostForm(lang + "Text")
 		message.Lang = lang
 		err := p.repository.CreateMessage(&message)
@@ -73,17 +73,17 @@ func (p *Portal) createTransition(c *gin.Context) {
 	var err error
 
 	transition := repository.Transition{}
-	transition.MsgTrigger = c.PostForm("MsgTrigger")
+	transition.MsgGroup = c.PostForm("MsgGroup")
 
 	temp := c.PostForm("fromState")
-	transition.FromStateID, err = strconv.Atoi(temp)
+	transition.FromState, err = strconv.Atoi(temp)
 	if err != nil {
 		c.AbortWithError(http.StatusBadRequest, err)
 		return
 	}
 
 	temp = c.PostForm("toState")
-	transition.ToStateID, err = strconv.Atoi(temp)
+	transition.ToState, err = strconv.Atoi(temp)
 	if err != nil {
 		c.AbortWithError(http.StatusBadRequest, err)
 		return
@@ -129,17 +129,16 @@ func (p *Portal) addFileToMsgGroup(c *gin.Context) {
 	var err error
 	language := c.PostForm("language")
 	temp := c.PostForm(language + "MsgGroup")
+
 	file.MsgGroupID, err = strconv.Atoi(temp)
 	if err != nil {
 		c.AbortWithError(http.StatusBadRequest, err)
 		return
 	}
+
 	file.FileType = c.PostForm("fileType")
-	fmt.Println("************************************************\nfile.FileType =", file.FileType)
-	// Handle file upload
 	formFile, err := c.FormFile("fileUpload")
 	if err != nil {
-		log.Println("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n", err)
 		c.AbortWithError(http.StatusBadRequest, err)
 		return
 	}
@@ -159,7 +158,7 @@ func (p *Portal) addFileToMsgGroup(c *gin.Context) {
 		if cancelActionErr != nil {
 			err = fmt.Errorf("addFileToMessageError:%w\n%w", err, cancelActionErr)
 		}
-		log.Println(err)
+
 		c.AbortWithError(http.StatusInternalServerError, err)
 		return
 	}

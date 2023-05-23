@@ -8,7 +8,7 @@ import (
 func (s storage) CreateChat(chat repository.Chat) error {
 	query := `INSERT INTO chat(chat_id, active, lang, state_id, cmd) VALUES (?, ?, ?, ?, ?)`
 
-	_, err := s.db.Exec(query, chat.ChatID, chat.Active, chat.Lang, chat.StateID, chat.CMD)
+	_, err := s.db.Exec(query, chat.ChatID, chat.Active, chat.Lang, chat.State.ID, chat.CMD)
 	if err != nil {
 		return fmt.Errorf("create chat failed: %w", err)
 	}
@@ -96,7 +96,7 @@ func (s storage) GetChat(chatID int64) (repository.Chat, error) {
 	query := `SELECT active, lang, state_id, cmd FROM chat WHERE chat_id=?`
 	chat := repository.Chat{ChatID: chatID}
 
-	err := s.db.QueryRow(query, chatID).Scan(&chat.Active, &chat.Lang, &chat.StateID, &chat.CMD)
+	err := s.db.QueryRow(query, chatID).Scan(&chat.Active, &chat.Lang, &chat.State.ID, &chat.CMD)
 	if err != nil {
 		return repository.Chat{}, fmt.Errorf("get chat failed: %w", err)
 	}
@@ -118,7 +118,7 @@ func (s storage) GetAllChats() ([]repository.Chat, error) {
 	for rows.Next() {
 		chat := repository.Chat{}
 
-		err = rows.Scan(&chat.ChatID, &chat.Active, &chat.Lang, &chat.StateID, &chat.CMD)
+		err = rows.Scan(&chat.ChatID, &chat.Active, &chat.Lang, &chat.State.ID, &chat.CMD)
 		if err != nil {
 			return nil, fmt.Errorf("get all chats failed: %w", err)
 		}

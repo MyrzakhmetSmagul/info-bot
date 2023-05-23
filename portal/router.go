@@ -12,6 +12,7 @@ func (p *Portal) Run(port string) error {
 	router.LoadHTMLGlob("./templates/*")
 	router.Static("/assets", "./assets")
 	create := router.Group("/create")
+	//GET methods
 	{
 		create.GET("/", func(c *gin.Context) {
 			c.HTML(http.StatusOK, "create.html", nil)
@@ -66,6 +67,7 @@ func (p *Portal) Run(port string) error {
 			})
 		})
 	}
+	//POST methods
 	{
 		create.POST("/message-group", p.createMsgGroup)
 		create.POST("/state", p.createState)

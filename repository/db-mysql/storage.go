@@ -2,6 +2,7 @@ package db_mysql
 
 import (
 	"database/sql"
+	"fmt"
 	"github.com/go-sql-driver/mysql"
 	"log"
 	"tg-bot/repository"
@@ -21,7 +22,24 @@ func New(cnf mysql.Config) repository.Repository {
 		log.Fatal(err)
 	}
 
-	return &storage{
+	s := storage{
 		db: db,
 	}
+
+	err = s.getDefaultState()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	return &s
+}
+
+func (s storage) getDefaultState() error {
+	query := `SELECT id, name FROM state WHERE name='/start'`
+	err := s.db.QueryRow(query).Scan(&repository.DefaultState.ID, &repository.DefaultState.Name)
+	if err != nil {
+		return fmt.Errorf("db_mysql.getDefaultState: %w", err)
+	}
+
+	return nil
 }

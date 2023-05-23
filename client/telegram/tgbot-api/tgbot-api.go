@@ -1,9 +1,9 @@
 package tgbot_api
 
 import (
+	"fmt"
 	"log"
 	"tg-bot/client/telegram"
-	"tg-bot/lib/e"
 	"tg-bot/repository"
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
@@ -37,12 +37,12 @@ func (c client) Updates(offset, limit int) ([]tgbotapi.Update, error) {
 	return updates, nil
 }
 
-func (c client) SendMessage(chatID int64, message string, replyMarkup *tgbotapi.ReplyKeyboardMarkup) error {
+func (c client) SendMessage(chatID int64, message string, replyMarkup tgbotapi.ReplyKeyboardMarkup) error {
 	log.Println(chatID)
 	msg := tgbotapi.NewMessage(chatID, message)
 
 	var reply interface{}
-	if replyMarkup == nil || len(replyMarkup.Keyboard) == 0 {
+	if len(replyMarkup.Keyboard) == 0 {
 		reply = tgbotapi.ReplyKeyboardRemove{
 			RemoveKeyboard: true,
 			Selective:      true,
@@ -56,12 +56,12 @@ func (c client) SendMessage(chatID int64, message string, replyMarkup *tgbotapi.
 	_, err := c.bot.Send(msg)
 
 	if err != nil {
-		return e.Wrap("can't send message", err)
+		return fmt.Errorf("client.telegram.tgbot-api.SendMessage failed: %w", err)
 	}
 	return nil
 }
 
-func (c client) SendMessageWithFile(chatID int64, fileInfo repository.File, caption string, replyMarkup *tgbotapi.ReplyKeyboardMarkup) error {
+func (c client) SendMessageWithFile(chatID int64, fileInfo repository.File, caption string, replyMarkup tgbotapi.ReplyKeyboardMarkup) error {
 	msg := make([]tgbotapi.Chattable, 1)
 	file := tgbotapi.FileBytes{
 		Name:  fileInfo.FileName,
@@ -69,7 +69,7 @@ func (c client) SendMessageWithFile(chatID int64, fileInfo repository.File, capt
 	}
 
 	var reply interface{}
-	if replyMarkup == nil || len(replyMarkup.Keyboard) == 0 {
+	if len(replyMarkup.Keyboard) == 0 {
 		reply = tgbotapi.ReplyKeyboardRemove{
 			RemoveKeyboard: true,
 			Selective:      true,
@@ -98,12 +98,12 @@ func (c client) SendMessageWithFile(chatID int64, fileInfo repository.File, capt
 
 		msg[0] = doc
 	default:
-		return e.Wrap("can't send message with file", repository.ErrUndefinedFileType)
+		return fmt.Errorf("client.telegram.tgbot-api.SendMessageWithFile failed: %w", repository.ErrUndefinedFileType)
 	}
 
 	_, err := c.bot.Send(msg[0])
 	if err != nil {
-		return e.Wrap("can't send photo message", err)
+		return fmt.Errorf("client.telegram.tgbot-api.SendMessageWithFile failed: %w", err)
 	}
 
 	return nil
@@ -137,7 +137,7 @@ func (c *client) SendMessageWithFiles(chatID int64, filesInfo []repository.File,
 			}
 			temp = doc
 		default:
-			return e.Wrap("can't send media group", repository.ErrUndefinedFileType)
+			return fmt.Errorf("client.telegram.tgbot-api.SendMessageWithFiles failed: %w", repository.ErrUndefinedFileType)
 		}
 
 		files = append(files, temp)
@@ -145,7 +145,7 @@ func (c *client) SendMessageWithFiles(chatID int64, filesInfo []repository.File,
 
 	mediaGroup := tgbotapi.NewMediaGroup(chatID, files)
 	if _, err := c.bot.SendMediaGroup(mediaGroup); err != nil {
-		return e.Wrap("can't send media group", err)
+		return fmt.Errorf("client.telegram.tgbot-api.SendMessageWithFiles failed: %w", err)
 	}
 
 	return nil
