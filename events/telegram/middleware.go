@@ -27,10 +27,7 @@ func (p *Processor) middleware(metaData Meta, text string) (err error) {
 				State:  repository.DefaultState,
 				CMD:    false,
 			}
-			chatMeta[chatID] = chatInfo{
-				cmd:    "",
-				record: []record{},
-			}
+			chatMeta[chatID] = []record{}
 			err = p.storage.CreateChat(chat)
 			if err != nil {
 				delete(chatMeta, chatID)

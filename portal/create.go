@@ -2,11 +2,12 @@ package portal
 
 import (
 	"fmt"
-	"github.com/gin-gonic/gin"
 	"log"
 	"net/http"
 	"strconv"
 	"tg-bot/repository"
+
+	"github.com/gin-gonic/gin"
 )
 
 func (p *Portal) createMsgGroup(c *gin.Context) {
@@ -22,7 +23,7 @@ func (p *Portal) createMsgGroup(c *gin.Context) {
 			log.Printf("portal.CreateMsgGroup failed: %w", err)
 			abortErr := p.abortCreateMsgGroup(messages)
 			if abortErr != nil {
-				err = fmt.Errorf("portal.CreateMsgGroup failed: %w\n%w", err, abortErr)
+				err = fmt.Errorf("portal.CreateMsgGroup failed: %w", err, abortErr)
 			}
 			c.AbortWithError(http.StatusInternalServerError, err)
 			return
@@ -73,17 +74,23 @@ func (p *Portal) createTransition(c *gin.Context) {
 	var err error
 
 	transition := repository.Transition{}
-	transition.MsgGroup = c.PostForm("MsgGroup")
+	language := c.PostForm("language")
+	temp := c.PostForm(language + "MsgGroup")
+	transition.MsgGroup.ID, err = strconv.Atoi(temp)
+	if err != nil {
+		c.AbortWithError(http.StatusBadRequest, err)
+		return
+	}
 
-	temp := c.PostForm("fromState")
-	transition.FromState, err = strconv.Atoi(temp)
+	temp = c.PostForm("fromState")
+	transition.FromState.ID, err = strconv.Atoi(temp)
 	if err != nil {
 		c.AbortWithError(http.StatusBadRequest, err)
 		return
 	}
 
 	temp = c.PostForm("toState")
-	transition.ToState, err = strconv.Atoi(temp)
+	transition.ToState.ID, err = strconv.Atoi(temp)
 	if err != nil {
 		c.AbortWithError(http.StatusBadRequest, err)
 		return

@@ -8,8 +8,32 @@
 <body>
 <div id="form-container">
     <form method="post" action="/create/transition">
-        <label for="MsgTrigger">Message Trigger</label>
-        <input id="MsgTrigger" name="MsgTrigger" required="true" placeholder="Message Trigger..." type="text">
+        <label for="language">Language</label>
+        <select id="language" name="language" required="true">
+            <option value="" disabled selected>Выберите язык</option>
+            <option value="kz">kz</option>
+            <option value="ru">ru</option>
+            <option value="en">en</option>
+        </select>
+        <label id="message" class="hidden">Message</label>
+        <select id="kzMsgGroup" name="kzMsgGroup" class="hidden">
+            <option value="" disabled selected>Выберите message</option>
+            {{ range .MessageGroups }}
+            <option value="{{.ID}}">{{.KzMsg.MsgTrigger}}</option>
+            {{end}}
+        </select>
+        <select id="ruMsgGroup" name="ruMsgGroup" class="hidden">
+            <option value="" disabled selected>Выберите message</option>
+            {{ range .MessageGroups }}
+            <option value="{{.ID}}">{{.RuMsg.MsgTrigger}}</option>
+            {{end}}
+        </select>
+        <select id="enMsgGroup" name="enMsgGroup" class="hidden">
+            <option value="" disabled selected>Выберите message</option>
+            {{ range .MessageGroups }}
+            <option value="{{.ID}}">{{.EnMsg.MsgTrigger}}</option>
+            {{end}}
+        </select>
         <label for="from-state">From State</label>
         <select id="from-state" name="fromState" required="true">
             <option value="" disabled selected>Выберите состояние</option>
@@ -30,6 +54,7 @@
 <div id="links">
     <a href="/create/">Назад</a>
 </div>
+<script src="/assets/js/createReplyMarkup.js"></script>
 <script src="/assets/js/createTransition.js"></script>
 </body>
 </html>

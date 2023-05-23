@@ -3,9 +3,10 @@ package telegram
 import (
 	"errors"
 	"fmt"
-	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"strings"
 	"tg-bot/repository"
+
+	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 )
 
 const (
@@ -21,8 +22,10 @@ type record struct {
 	messageGroup repository.MessageGroup
 }
 
-var chatMeta = make(map[int64][]record)
-var chatCmd = make(map[int64]string)
+var (
+	chatMeta = make(map[int64][]record)
+	chatCmd  = make(map[int64]string)
+)
 
 var ErrUndefinedCommand = errors.New("undefined command")
 
@@ -31,7 +34,7 @@ func (p Processor) processing(chat repository.Chat, text string, messageID int) 
 		return p.doCmd(chat, text, messageID)
 	}
 
-	//if text ==
+	// if text ==
 
 	return nil
 }
@@ -43,7 +46,7 @@ func (p Processor) doCmd(chat repository.Chat, text string, messageID int) error
 	case language:
 		err = p.changeLang(&chat, text)
 	case question:
-		//TODO something
+		// TODO something
 		fmt.Println(messageID)
 	default:
 		valid = false
@@ -127,48 +130,45 @@ func (p Processor) getMessageGroup(trigger, lang string) (repository.MessageGrou
 }
 
 func (p Processor) oneStepBack(chat repository.Chat) error {
-	var trigger string
-	history := chatMeta[chat.ChatID]
-	if history == nil {
-		chatMeta[chat.ChatID] = []record{}
-		trigger = "main menu"
-		err := p.sendMessage(&chat, trigger)
-		if err != nil {
-			return fmt.Errorf("events.telegram.oneStepBack failed: %w", err)
-		}
-		msgGroup, err := p.getMessageGroup(trigger, chat.Lang)
-		if err != nil {
-			return fmt.Errorf("events.telegram.oneStepBack failed: %w", err)
-		}
-		state :=
-		record := record{state: }
-	} else if len(history) == 1 {
-		switch chat.Lang {
-		case repository.Kz:
-			trigger = history[0].messageGroup.KzMsg.MsgTrigger
-		case repository.Ru:
-			trigger = history[0].messageGroup.RuMsg.MsgTrigger
-		case repository.En:
-			trigger = history[0].messageGroup.EnMsg.MsgTrigger
-		}
-		err := p.sendMessage(&chat, trigger)
-		if err != nil {
-			return fmt.Errorf("events.telegram.oneStepBack failed: %w", err)
-		}
+	// var trigger string
+	// history := chatMeta[chat.ChatID]
+	// if history == nil {
+	// 	chatMeta[chat.ChatID] = []record{}
+	// 	trigger = "main menu"
+	// 	err := p.sendMessage(&chat, trigger)
+	// 	if err != nil {
+	// 		return fmt.Errorf("events.telegram.oneStepBack failed: %w", err)
+	// 	}
+	// 	msgGroup, err := p.getMessageGroup(trigger, chat.Lang)
+	// 	if err != nil {
+	// 		return fmt.Errorf("events.telegram.oneStepBack failed: %w", err)
+	// 	}
+	// 	// state :=
+	// 	r := record{}
+	// } else if len(history) == 1 {
+	// 	switch chat.Lang {
+	// 	case repository.Kz:
+	// 		trigger = history[0].messageGroup.KzMsg.MsgTrigger
+	// 	case repository.Ru:
+	// 		trigger = history[0].messageGroup.RuMsg.MsgTrigger
+	// 	case repository.En:
+	// 		trigger = history[0].messageGroup.EnMsg.MsgTrigger
+	// 	}
+	// 	err := p.sendMessage(&chat, trigger)
+	// 	if err != nil {
+	// 		return fmt.Errorf("events.telegram.oneStepBack failed: %w", err)
+	// 	}
 
-	} else if len(history) < 2 {
-
-	}
+	// } else if len(history) < 2 {
+	// }
 	return nil
 }
 
 func (p Processor) sendMessage(chat *repository.Chat, trigger string) error {
-
 	return nil
 }
 
 func (p Processor) getMessageAndReply(text, lang string) (repository.Message, tgbotapi.ReplyKeyboardMarkup, error) {
-
 	return repository.Message{}, tgbotapi.ReplyKeyboardMarkup{}, nil
 }
 

@@ -3,8 +3,9 @@ package portal
 import (
 	"database/sql"
 	"errors"
-	"github.com/gin-gonic/gin"
 	"net/http"
+
+	"github.com/gin-gonic/gin"
 )
 
 func (p *Portal) Run(port string) error {
@@ -12,7 +13,7 @@ func (p *Portal) Run(port string) error {
 	router.LoadHTMLGlob("./templates/*")
 	router.Static("/assets", "./assets")
 	create := router.Group("/create")
-	//GET methods
+	// GET methods
 	{
 		create.GET("/", func(c *gin.Context) {
 			c.HTML(http.StatusOK, "create.html", nil)
@@ -29,8 +30,14 @@ func (p *Portal) Run(port string) error {
 				c.AbortWithError(http.StatusInternalServerError, err)
 				return
 			}
+			messageGroups, err := p.getAllMessageGroup()
+			if err != nil && !errors.Is(err, sql.ErrNoRows) {
+				c.AbortWithError(http.StatusInternalServerError, err)
+				return
+			}
 			c.HTML(http.StatusOK, "createTransition.html", gin.H{
-				"States": states,
+				"States":        states,
+				"MessageGroups": messageGroups,
 			})
 		})
 		create.GET("/reply-markup", func(c *gin.Context) {
@@ -48,7 +55,6 @@ func (p *Portal) Run(port string) error {
 				"States":        states,
 				"MessageGroups": messageGroups,
 			})
-
 		})
 		create.GET("/add/file", func(c *gin.Context) {
 			states, err := p.getAllStates()
@@ -67,7 +73,7 @@ func (p *Portal) Run(port string) error {
 			})
 		})
 	}
-	//POST methods
+	// POST methods
 	{
 		create.POST("/message-group", p.createMsgGroup)
 		create.POST("/state", p.createState)
