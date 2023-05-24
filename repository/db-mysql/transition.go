@@ -33,7 +33,7 @@ WHERE NOT EXISTS (
 }
 
 func (s storage) GetTransition(fromStateID int, msgGroupID int) (repository.Transition, error) {
-	query := `SELECT id, to_state FROM transition WHERE from_state=? and msg_trigger=?`
+	query := `SELECT id, to_state FROM transition WHERE from_state=? and msg_group_id=?`
 
 	transition := repository.Transition{FromState: repository.State{ID: fromStateID}, MsgGroup: repository.MessageGroup{ID: msgGroupID}}
 	err := s.db.QueryRow(query, fromStateID, msgGroupID).Scan(&transition.ID, &transition.ToState.ID)
@@ -45,7 +45,7 @@ func (s storage) GetTransition(fromStateID int, msgGroupID int) (repository.Tran
 }
 
 func (s storage) GetAllTransitions() ([]repository.Transition, error) {
-	query := `SELECT id, msg_trigger, from_state, to_state FROM transition`
+	query := `SELECT id, msg_group_id, from_state, to_state FROM transition`
 
 	rows, err := s.db.Query(query)
 	if err != nil {

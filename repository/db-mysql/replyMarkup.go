@@ -6,9 +6,9 @@ import (
 )
 
 func (s storage) CreateReplyMarkup(rm *repository.ReplyMarkup) error {
-	query := `INSERT INTO reply_markup(state_id, msg_group_id) VALUES (?, ?)`
+	query := `INSERT INTO reply_markup(msg_group_id, reply_msg_group_id) VALUES (?, ?)`
 
-	exec, err := s.db.Exec(query, rm.StateID, rm.MsgID)
+	exec, err := s.db.Exec(query, rm.MessageGroupID, rm.ReplyMessageGroupID)
 	if err != nil {
 		return fmt.Errorf("create replyMarkup failed: %w", err)
 	}
@@ -24,10 +24,10 @@ func (s storage) CreateReplyMarkup(rm *repository.ReplyMarkup) error {
 }
 
 func (s storage) GetReplyMarkupByID(id int) (repository.ReplyMarkup, error) {
-	query := `SELECT state_id, msg_group_id FROM reply_markup WHERE id=?`
+	query := `SELECT msg_group_id, reply_msg_group_id FROM reply_markup WHERE id=?`
 
 	rm := repository.ReplyMarkup{ID: id}
-	err := s.db.QueryRow(query, id).Scan(&rm.StateID, &rm.MsgID)
+	err := s.db.QueryRow(query, id).Scan(&rm.MessageGroupID, &rm.ReplyMessageGroupID)
 	if err != nil {
 		return repository.ReplyMarkup{}, fmt.Errorf("get replyMarkup by id failed: %w", err)
 	}
@@ -35,10 +35,10 @@ func (s storage) GetReplyMarkupByID(id int) (repository.ReplyMarkup, error) {
 	return rm, nil
 }
 
-func (s *storage) GetReplyMarkupsOfState(stateID int) ([]repository.ReplyMarkup, error) {
-	query := `SELECT id, msg_group_id FROM reply_markup WHERE state_id=?`
+func (s *storage) GetReplyMarkupsOfState(messageGroupID int) ([]repository.ReplyMarkup, error) {
+	query := `SELECT id, msg_group_id FROM reply_markup WHERE reply_msg_group_id=?`
 
-	rows, err := s.db.Query(query, stateID)
+	rows, err := s.db.Query(query, messageGroupID)
 	if err != nil {
 		return nil, fmt.Errorf("get replyMarkups of state failed: %w", err)
 	}
@@ -47,9 +47,9 @@ func (s *storage) GetReplyMarkupsOfState(stateID int) ([]repository.ReplyMarkup,
 	defer rows.Close()
 
 	for rows.Next() {
-		rm := repository.ReplyMarkup{StateID: stateID}
+		rm := repository.ReplyMarkup{MessageGroupID: messageGroupID}
 
-		err = rows.Scan(&rm.ID, &rm.MsgID)
+		err = rows.Scan(&rm.ID, &rm.ReplyMessageGroupID)
 		if err != nil {
 			return nil, fmt.Errorf("get replyMarkups of state failed: %w", err)
 		}

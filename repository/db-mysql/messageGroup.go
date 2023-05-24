@@ -37,6 +37,21 @@ func (s storage) GetMessageGroup(msgID int, lang string) (repository.MessageGrou
 	return msgGroup, nil
 }
 
+func (s storage) GetMessageGroupByID(msgGroupID int) (repository.MessageGroup, error) {
+	query := "SELECT id, kz_msg_id, ru_msg_id, en_msg_id FROM message_group WHERE id=?"
+
+	row := s.db.QueryRow(query, msgGroupID)
+
+	msgGroup := repository.MessageGroup{}
+
+	err := row.Scan(&msgGroup.ID, &msgGroup.KzMsg.ID, &msgGroup.RuMsg.ID, &msgGroup.EnMsg.ID)
+	if err != nil {
+		return repository.MessageGroup{}, fmt.Errorf("get message group failed: %w", err)
+	}
+
+	return msgGroup, nil
+}
+
 func (s storage) GetAllMessageGroups() ([]repository.MessageGroup, error) {
 	query := `SELECT id, kz_msg_id, ru_msg_id, en_msg_id FROM message_group`
 

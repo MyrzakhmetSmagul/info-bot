@@ -15,7 +15,7 @@ func (p *Portal) createMsgGroup(c *gin.Context) {
 	messages := make([]repository.Message, 0)
 	for _, lang := range languages {
 		message := repository.Message{}
-		message.MsgTrigger = c.PostForm(lang + "MsgGroup")
+		message.MsgTrigger = c.PostForm(lang + "MsgTrigger")
 		message.Text = c.PostForm(lang + "Text")
 		message.Lang = lang
 		err := p.repository.CreateMessage(&message)
@@ -110,13 +110,13 @@ func (p *Portal) createReplyMarkup(c *gin.Context) {
 	rm := repository.ReplyMarkup{}
 	language := c.PostForm("language")
 	temp := c.PostForm(language + "MsgGroup")
-	rm.MsgID, err = strconv.Atoi(temp)
+	rm.ReplyMessageGroupID, err = strconv.Atoi(temp)
 	if err != nil {
 		c.AbortWithError(http.StatusBadRequest, err)
 		return
 	}
 	temp = c.PostForm("state")
-	rm.StateID, err = strconv.Atoi(temp)
+	rm.MessageGroupID, err = strconv.Atoi(temp)
 	if err != nil {
 		c.AbortWithError(http.StatusBadRequest, err)
 		return

@@ -2,13 +2,11 @@ package db_mysql
 
 import (
 	"fmt"
-	"log"
 	"tg-bot/repository"
 )
 
 func (s storage) AddFileToMessage(file *repository.File) error {
 	query := `INSERT INTO file(msg_group_id, file_name, file_type) VALUES (?, ?, ?)`
-	log.Println("^^^^^^^^^^^^^\n", *file)
 	exec, err := s.db.Exec(query, file.MsgGroupID, file.FileName, file.FileType)
 	if err != nil {
 		return fmt.Errorf("add file to message failed: %w", err)

@@ -38,9 +38,9 @@ type MessageGroup struct {
 }
 
 type ReplyMarkup struct {
-	ID      int
-	MsgID   int
-	StateID int
+	ID                  int
+	ReplyMessageGroupID int
+	MessageGroupID      int
 }
 
 type Command struct {

@@ -22,6 +22,7 @@ type MessageRepository interface {
 type MessageGroupRepository interface {
 	CreateMessageGroup(msgGroup *MessageGroup) error
 	GetMessageGroup(msgID int, lang string) (MessageGroup, error)
+	GetMessageGroupByID(msgGroupID int) (MessageGroup, error)
 	GetAllMessageGroups() ([]MessageGroup, error)
 	DeleteMessageGroup(msgGroupID int) error
 }

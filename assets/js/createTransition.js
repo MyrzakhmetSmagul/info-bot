@@ -1,7 +1,11 @@
-let fromState = document.getElementById("from-state");
-let toState = document.getElementById("to-state");
-let prevFromState;
+let prevSelect;
 let prevToState;
+let prevFromState;
+let labelHidden = true;
+let language = document.getElementById("language");
+let toState = document.getElementById("to-state");
+let fromState = document.getElementById("from-state");
+language.addEventListener("change", selectLanguage);
 
 fromState.addEventListener("change", function () {
     let selectedOption = fromState.options[fromState.selectedIndex];
@@ -40,3 +44,20 @@ toState.addEventListener("change", function () {
     prevToState = selectedOption;
     console.log(prevToState);
 })
+
+function selectLanguage() {
+    if (labelHidden) {
+        labelHidden = false;
+        document.getElementById("message").classList.remove("hidden");
+    }
+
+    let prefix = language.value;
+    let select = document.getElementById(prefix + "MsgGroup");
+    select.classList.toggle("hidden");
+    select.required = true;
+    if (prevSelect !== undefined) {
+        prevSelect.classList.toggle("hidden");
+        prevSelect.required = false;
+    }
+    prevSelect = select;
+}

@@ -33,11 +33,11 @@ CREATE TABLE IF NOT EXISTS `message_group`
 CREATE TABLE IF NOT EXISTS `reply_markup`
 (
     `id`           INT NOT NULL AUTO_INCREMENT,
-    `state_id`     INT NOT NULL,
     `msg_group_id` INT NOT NULL,
+    `reply_msg_group_id`     INT NOT NULL,
     PRIMARY KEY (`id`),
-    CONSTRAINT `reply_markup_fk0` FOREIGN KEY (`state_id`) REFERENCES `state` (`id`),
-    CONSTRAINT `reply_markup_fk1` FOREIGN KEY (`msg_group_id`) REFERENCES `message_group` (`id`)
+    CONSTRAINT `reply_markup_fk0` FOREIGN KEY (`msg_group_id`) REFERENCES `message_group` (`id`),
+    CONSTRAINT `reply_markup_fk1` FOREIGN KEY (`reply_msg_group_id`) REFERENCES `message_group` (`id`)
 );
 
 CREATE TABLE IF NOT EXISTS `command`
@@ -72,11 +72,12 @@ CREATE TABLE IF NOT EXISTS `chat`
 
 CREATE TABLE IF NOT EXISTS `transition`
 (
-    `id`          INT NOT NULL AUTO_INCREMENT,
-    `msg_trigger` VARCHAR(255),
-    `from_state`  INT NOT NULL,
-    `to_state`    INT NOT NULL,
+    `id`           INT NOT NULL AUTO_INCREMENT,
+    `msg_group_id` INT NOT NULL,
+    `from_state`   INT NOT NULL,
+    `to_state`     INT NOT NULL,
     PRIMARY KEY (`id`),
-    CONSTRAINT `transition_fk0` FOREIGN KEY (`from_state`) REFERENCES `state` (`id`),
-    CONSTRAINT `transition_fk1` FOREIGN KEY (`to_state`) REFERENCES `state` (`id`)
+    CONSTRAINT `transition_fk0` FOREIGN KEY (`msg_group_id`) REFERENCES `message_group` (`id`),
+    CONSTRAINT `transition_fk1` FOREIGN KEY (`from_state`) REFERENCES `state` (`id`),
+    CONSTRAINT `transition_fk2` FOREIGN KEY (`to_state`) REFERENCES `state` (`id`)
 );

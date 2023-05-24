@@ -42,6 +42,25 @@
             <option value="{{.ID}}">{{.EnMsg.MsgTrigger}}</option>
             {{end}}
         </select>
+        <label id="messageReply" class="hidden">Message</label>
+        <select id="kzReplyMsgGroup" name="kzMsgGroup" class="hidden">
+            <option value="" disabled selected>Выберите message</option>
+            {{ range .MessageGroups }}
+            <option value="{{.ID}}">{{.KzMsg.MsgTrigger}}</option>
+            {{end}}
+        </select>
+        <select id="ruReplyMsgGroup" name="ruMsgGroup" class="hidden">
+            <option value="" disabled selected>Выберите message</option>
+            {{ range .MessageGroups }}
+            <option value="{{.ID}}">{{.RuMsg.MsgTrigger}}</option>
+            {{end}}
+        </select>
+        <select id="enReplyMsgGroup" name="enMsgGroup" class="hidden">
+            <option value="" disabled selected>Выберите message</option>
+            {{ range .MessageGroups }}
+            <option value="{{.ID}}">{{.EnMsg.MsgTrigger}}</option>
+            {{end}}
+        </select>
         <input type="submit" value="Создать шаблон клавиатуры">
     </form>
 </div>
