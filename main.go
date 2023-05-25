@@ -6,6 +6,9 @@ import (
 	"github.com/redis/go-redis/v9"
 	"log"
 	"os"
+	tgbot_api "tg-bot/client/telegram/tgbot-api"
+	event_consumer "tg-bot/consumer/event-consumer"
+	"tg-bot/events/telegram"
 	file_manager "tg-bot/file-manager"
 	"tg-bot/portal"
 	db_mysql "tg-bot/repository/db-mysql"
@@ -21,22 +24,22 @@ type config struct {
 
 func main() {
 	cnf := getConfig()
-	site := portal.NewPortal(db_mysql.New(cnf.MysqlConfig), file_manager.New(cnf.BasePath), cnf.BasePath)
-	site.Run(cnf.Port)
-	//
-	//eventsProcessor := telegram.New(
-	//	tg.New(cnf.Token),
+	db := db_mysql.New(cnf.MysqlConfig)
+	fileManager := file_manager.New(cnf.BasePath)
+	if len(os.Args) != 1 && (os.Args[1] == "-site" || os.Args[1] == "--site") {
+		site := portal.NewPortal(db, fileManager, cnf.BasePath)
+		go site.Run(cnf.Port)
+	}
 
-	//	redis.NewClient(&cnf.RedisOptions),
-	//)
-	//
-	//log.Println("...service started")
-	//
-	//consumer := consumer.New(eventsProcessor, eventsProcessor, 100)
-	//
-	//if err := consumer.Start(); err != nil {
-	//	log.Fatal(err)
-	//}
+	eventsProcessor := telegram.New(tgbot_api.New(cnf.Token), db, fileManager)
+
+	log.Println("...service started")
+
+	consumer := event_consumer.New(eventsProcessor, eventsProcessor, 100)
+
+	if err := consumer.Start(); err != nil {
+		log.Fatal(err)
+	}
 }
 
 func getConfig() config {

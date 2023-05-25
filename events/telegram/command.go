@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"log"
 	"strings"
 	"tg-bot/repository"
 
@@ -24,59 +25,57 @@ type record struct {
 }
 
 var (
-	chatMeta = make(map[int64][]record)
-	chatCmd  = make(map[int64]string)
+	chatCmd             = make(map[int64]string)
+	ErrUndefinedCommand = errors.New("undefined command")
 )
-
-var ErrUndefinedCommand = errors.New("undefined command")
 
 func (p Processor) processing(chat repository.Chat, text string, messageID int) error {
 	if chat.CMD {
 		return p.doCmd(chat, text, messageID)
 	}
-
 	if text == language || text == question {
 		err := p.storage.EnableCmd(chat.ChatID)
 		if err != nil {
-			return fmt.Errorf("event.telegram.programming failed: %w", err)
+			return fmt.Errorf("event.telegram.processing failed: %w", err)
 		}
 
-		err = p.sendMessage(&chat, text)
+		err = p.sendMessage(chat, text)
 		if err != nil {
-			return fmt.Errorf("event.telegram.programming failed: %w", err)
+			return fmt.Errorf("event.telegram.processing failed: %w", err)
 		}
 		chatCmd[chat.ChatID] = text
 		return nil
 	}
 
 	msgGroup, err := p.getMessageGroup(text, chat.Lang)
-	if err != nil {
-		return fmt.Errorf("event.telegram.programming failed: %w", err)
+	if err != nil && !errors.Is(err, sql.ErrNoRows) {
+		return fmt.Errorf("event.telegram.processing failed: %w", err, text)
+	} else if !errors.Is(err, sql.ErrNoRows) {
+		log.Println(err)
+		return p.sendMessage(chat, undefinedCommandTrigger)
 	}
 
 	transition, err := p.storage.GetTransition(chat.State.ID, msgGroup.ID)
 	if err != nil {
-		return fmt.Errorf("event.telegram.programming failed: %w", err)
+		log.Println(err)
+		return p.sendMessage(chat, undefinedCommandTrigger)
 	}
 
-	err = p.sendMessage(&chat, text)
+	err = p.sendMessageWithData(&chat, msgGroup)
 	if err != nil {
-		return fmt.Errorf("event.telegram.programming failed: %w", err)
+		return fmt.Errorf("event.telegram.processing failed: %w", err)
 	}
 
-	err = p.storage.ChangeChatState(chat.ChatID, transition.ToState.ID)
+	err = p.storage.ChangeChatState(chat.ChatID, transition.ToState.ID, msgGroup.ID)
 	if err != nil {
-		return fmt.Errorf("event.telegram.programming failed: %w", err)
+		return fmt.Errorf("event.telegram.processing failed: %w", err)
 	}
 
-	chatMeta[chat.ChatID] = append(chatMeta[chat.ChatID], record{
-		state:        transition.ToState,
-		messageGroup: msgGroup,
-	})
 	return nil
 }
 
 func (p Processor) doCmd(chat repository.Chat, text string, messageID int) error {
+	log.Printf("do cmd text: %s", text)
 	var err error
 	valid := true
 	switch chatCmd[chat.ChatID] {
@@ -99,18 +98,22 @@ func (p Processor) doCmd(chat repository.Chat, text string, messageID int) error
 	}
 
 	if valid {
-		history := chatMeta[chat.ChatID]
+		log.Println("do cmd valid")
+		chat.MsgGroup, err = p.getMessageGroupByID(chat.MsgGroup.ID)
+		if err != nil {
+			return fmt.Errorf("event.telegram.processing failed: %w", err)
+		}
 		switch chat.Lang {
 		case repository.Kz:
-			text = history[len(history)-1].messageGroup.KzMsg.MsgTrigger
+			text = chat.MsgGroup.KzMsg.MsgTrigger
 		case repository.Ru:
-			text = history[len(history)-1].messageGroup.RuMsg.MsgTrigger
+			text = chat.MsgGroup.RuMsg.MsgTrigger
 		case repository.En:
-			text = history[len(history)-1].messageGroup.EnMsg.MsgTrigger
+			text = chat.MsgGroup.EnMsg.MsgTrigger
 		}
 	}
 
-	return p.sendMessage(&chat, text)
+	return p.sendMessage(chat, text)
 }
 
 func (p Processor) changeLang(chat *repository.Chat, choice string) error {
@@ -123,7 +126,7 @@ func (p Processor) changeLang(chat *repository.Chat, choice string) error {
 	case "english":
 		lang = repository.En
 	default:
-		err := p.sendMessage(chat, choiceUnavailableLangTrigger)
+		err := p.sendMessage(*chat, choiceUnavailableLangTrigger)
 		if err != nil {
 			return fmt.Errorf("events.telegram.changeLang: %w", err)
 		}
@@ -136,22 +139,6 @@ func (p Processor) changeLang(chat *repository.Chat, choice string) error {
 	}
 
 	chat.Lang = lang
-	var trigger string
-	history := chatMeta[chat.ChatID]
-
-	switch chat.Lang {
-	case repository.Kz:
-		trigger = history[len(history)-1].messageGroup.KzMsg.MsgTrigger
-	case repository.Ru:
-		trigger = history[len(history)-1].messageGroup.RuMsg.MsgTrigger
-	case repository.En:
-		trigger = history[len(history)-1].messageGroup.EnMsg.MsgTrigger
-	}
-	err = p.sendMessage(chat, trigger)
-	if err != nil {
-		return fmt.Errorf("events.telegram.changeLang: %w", err)
-	}
-
 	return nil
 }
 
@@ -182,66 +169,68 @@ func (p Processor) getMessageGroup(trigger, lang string) (repository.MessageGrou
 	return msgGroup, nil
 }
 
-func (p Processor) oneStepBack(chat repository.Chat) error {
-	var trigger string
-	history := chatMeta[chat.ChatID]
-	if history == nil {
-		chatMeta[chat.ChatID] = []record{}
-		trigger = "main menu"
-		err := p.sendMessage(&chat, trigger)
-		if err != nil {
-			return fmt.Errorf("events.telegram.oneStepBack failed: %w", err)
-		}
-		msgGroup, err := p.getMessageGroup(trigger, chat.Lang)
-		if err != nil {
-			return fmt.Errorf("events.telegram.oneStepBack failed: %w", err)
-		}
-		r := record{
-			state:        chat.State,
-			messageGroup: msgGroup,
-		}
-		chatMeta[chat.ChatID] = append(chatMeta[chat.ChatID], r)
-	} else if len(history) == 1 {
-		switch chat.Lang {
-		case repository.Kz:
-			trigger = history[0].messageGroup.KzMsg.MsgTrigger
-		case repository.Ru:
-			trigger = history[0].messageGroup.RuMsg.MsgTrigger
-		case repository.En:
-			trigger = history[0].messageGroup.EnMsg.MsgTrigger
-		}
-		err := p.sendMessage(&chat, trigger)
-		if err != nil {
-			return fmt.Errorf("events.telegram.oneStepBack failed: %w", err)
-		}
+func (p Processor) getMessageGroupByID(msgGroupID int) (repository.MessageGroup, error) {
+	msgGroup, err := p.storage.GetMessageGroupByID(msgGroupID)
+	if err != nil {
+		return repository.MessageGroup{}, fmt.Errorf("events.telegram.getMessageGroupByID was failed: %w", err)
+	}
 
-	} else if len(history) < 2 {
-		switch chat.Lang {
-		case repository.Kz:
-			trigger = history[len(history)-2].messageGroup.KzMsg.MsgTrigger
-		case repository.Ru:
-			trigger = history[len(history)-2].messageGroup.RuMsg.MsgTrigger
-		case repository.En:
-			trigger = history[len(history)-2].messageGroup.EnMsg.MsgTrigger
-		}
-		err := p.storage.ChangeChatState(chat.ChatID, history[len(history)-2].state.ID)
-		if err != nil {
-			return fmt.Errorf("events.telegram.oneStepBack failed: %w", err)
-		}
-		chat.State = history[len(history)-2].state
-		err = p.sendMessage(&chat, trigger)
-		if err != nil {
-			return fmt.Errorf("events.telegram.oneStepBack failed: %w", err)
-		}
-		chatMeta[chat.ChatID] = history[:len(history)-1]
+	msgGroup.KzMsg, err = p.storage.GetMessageByID(msgGroup.KzMsg.ID)
+	if err != nil {
+		return repository.MessageGroup{}, fmt.Errorf("events.telegram.getMessageGroupByID was failed: %w", err)
+	}
+	msgGroup.RuMsg, err = p.storage.GetMessageByID(msgGroup.RuMsg.ID)
+	if err != nil {
+		return repository.MessageGroup{}, fmt.Errorf("events.telegram.getMessageGroupByID was failed: %w", err)
+	}
+	msgGroup.EnMsg, err = p.storage.GetMessageByID(msgGroup.EnMsg.ID)
+	if err != nil {
+		return repository.MessageGroup{}, fmt.Errorf("events.telegram.getMessageGroupByID was failed: %w", err)
+	}
+
+	return msgGroup, nil
+}
+
+func (p Processor) sendMessageWithData(chat *repository.Chat, msgGroup repository.MessageGroup) error {
+	var text string
+	switch chat.Lang {
+	case repository.Kz:
+		text = msgGroup.KzMsg.Text
+	case repository.Ru:
+		text = msgGroup.RuMsg.Text
+	case repository.En:
+		text = msgGroup.EnMsg.Text
+	}
+	rkb, err := p.getReply(msgGroup.ID, chat.Lang)
+	if err != nil {
+		return fmt.Errorf("events.telegram.sendMessage failed: %w", err)
+	}
+	log.Println("rkb:", rkb)
+	files, err := p.getFilesOfMsgGroup(msgGroup.ID)
+	if err != nil {
+		return fmt.Errorf("events.telegram.sendMessage failed: %w", err)
+	}
+
+	if files == nil || len(files) == 0 {
+		err = p.tg.SendMessage(chat.ChatID, text, rkb)
+	} else if len(files) == 1 {
+		log.Println(len(files))
+		err = p.tg.SendMessageWithFile(chat.ChatID, files[0], text, rkb)
+	} else {
+		log.Println(len(files))
+
+		err = p.tg.SendMessageWithFiles(chat.ChatID, files, text)
+	}
+	if err != nil {
+		return fmt.Errorf("events.telegram.sendMessage was failed: %w", err)
 	}
 	return nil
 }
 
-func (p Processor) sendMessage(chat *repository.Chat, trigger string) error {
+func (p Processor) sendMessage(chat repository.Chat, trigger string) error {
 	msgGroup, err := p.getMessageGroup(trigger, chat.Lang)
 	if err != nil {
-		return fmt.Errorf("events.telegram.sendMessage failed: %w", err)
+		return fmt.Errorf("events.telegram.sendMessage failed: %w,\ntrigger: %s", err, trigger)
 	}
 
 	var text string
@@ -257,17 +246,20 @@ func (p Processor) sendMessage(chat *repository.Chat, trigger string) error {
 	if err != nil {
 		return fmt.Errorf("events.telegram.sendMessage failed: %w", err)
 	}
-
+	log.Println("rkb:", rkb)
 	files, err := p.getFilesOfMsgGroup(msgGroup.ID)
 	if err != nil {
 		return fmt.Errorf("events.telegram.sendMessage failed: %w", err)
 	}
 
-	if files == nil {
+	if files == nil || len(files) == 0 {
 		err = p.tg.SendMessage(chat.ChatID, text, rkb)
 	} else if len(files) == 1 {
+		log.Println(len(files))
 		err = p.tg.SendMessageWithFile(chat.ChatID, files[0], text, rkb)
 	} else {
+		log.Println(len(files))
+
 		err = p.tg.SendMessageWithFiles(chat.ChatID, files, text)
 	}
 	if err != nil {
@@ -281,6 +273,7 @@ func (p Processor) getReply(msgGroupID int, lang string) (tgbotapi.ReplyKeyboard
 	if err != nil && !errors.Is(err, sql.ErrNoRows) {
 		return tgbotapi.ReplyKeyboardMarkup{}, fmt.Errorf("events.telegram.getReply failed: %w", err)
 	}
+	log.Println("getReply:", rms)
 	if rms == nil {
 		return tgbotapi.ReplyKeyboardMarkup{}, nil
 	}

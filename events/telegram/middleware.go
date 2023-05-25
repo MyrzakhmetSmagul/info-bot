@@ -3,6 +3,7 @@ package telegram
 import (
 	"database/sql"
 	"errors"
+	"log"
 	"strings"
 	"tg-bot/lib/e"
 	"tg-bot/repository"
@@ -11,6 +12,7 @@ import (
 func (p *Processor) middleware(metaData Meta, text string) (err error) {
 	errMsg := "middleware catch error"
 	defer func() { err = e.WrapIfErr(errMsg, err) }()
+	log.Println("^^^^^^^^^^^^^^^^^^^^\nmiddleware")
 	text = strings.TrimSpace(text)
 	chatID := metaData.ChatID
 	chat, err := p.storage.GetChat(chatID)
@@ -19,25 +21,26 @@ func (p *Processor) middleware(metaData Meta, text string) (err error) {
 	}
 
 	if errors.Is(err, sql.ErrNoRows) {
+		log.Println("hello errors.Is(err, sql.ErrNoRows)")
+		chat = repository.Chat{
+			ChatID:   chatID,
+			Active:   true,
+			Lang:     repository.Ru,
+			State:    repository.DefaultState,
+			MsgGroup: repository.StartMessageGroup,
+			CMD:      false,
+		}
 		if text == "/start" {
-			chat = repository.Chat{
-				ChatID: chatID,
-				Active: true,
-				Lang:   repository.Ru,
-				State:  repository.DefaultState,
-				CMD:    false,
-			}
-			chatMeta[chatID] = []record{}
+			log.Println("/start")
 			err = p.storage.CreateChat(chat)
 			if err != nil {
-				delete(chatMeta, chatID)
 				return err
 			}
 
-			err = p.sendMessage(&chat, "/start")
+			p.processing(chat, text, metaData.MessageID)
 			return err
 		}
-		err = p.sendMessage(&chat, "/unsubscribed")
+		err = p.sendMessage(chat, "/unsubscribed")
 		return err
 	}
 
@@ -47,10 +50,10 @@ func (p *Processor) middleware(metaData Meta, text string) (err error) {
 			if err != nil {
 				return err
 			}
-			err = p.sendMessage(&chat, "/start")
+			err = p.processing(chat, "/start", metaData.MessageID)
 			return err
 		}
-		err = p.sendMessage(&chat, "/unsubscribed")
+		err = p.sendMessage(chat, "/unsubscribed")
 		return err
 	}
 

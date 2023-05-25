@@ -62,7 +62,7 @@ type ChatRepository interface {
 	EnableCmd(chatID int64) error
 	DisableCmd(chatID int64) error
 	ChangeChatLang(chatID int64, newLang string) error
-	ChangeChatState(chatID int64, newState int) error
+	ChangeChatState(chatID int64, newState int, msgGroupID int) error
 	GetChat(chatID int64) (Chat, error)
 	GetAllChats() ([]Chat, error)
 	DeleteChat(chatID int64) error

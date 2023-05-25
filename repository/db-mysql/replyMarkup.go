@@ -36,7 +36,7 @@ func (s storage) GetReplyMarkupByID(id int) (repository.ReplyMarkup, error) {
 }
 
 func (s *storage) GetReplyMarkupsOfState(messageGroupID int) ([]repository.ReplyMarkup, error) {
-	query := `SELECT id, msg_group_id FROM reply_markup WHERE reply_msg_group_id=?`
+	query := `SELECT id, reply_msg_group_id FROM reply_markup WHERE msg_group_id=?`
 
 	rows, err := s.db.Query(query, messageGroupID)
 	if err != nil {

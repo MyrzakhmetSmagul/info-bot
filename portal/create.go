@@ -110,13 +110,13 @@ func (p *Portal) createReplyMarkup(c *gin.Context) {
 	rm := repository.ReplyMarkup{}
 	language := c.PostForm("language")
 	temp := c.PostForm(language + "MsgGroup")
-	rm.ReplyMessageGroupID, err = strconv.Atoi(temp)
+	rm.MessageGroupID, err = strconv.Atoi(temp)
 	if err != nil {
 		c.AbortWithError(http.StatusBadRequest, err)
 		return
 	}
-	temp = c.PostForm("state")
-	rm.MessageGroupID, err = strconv.Atoi(temp)
+	temp = c.PostForm(language + "ReplyMsgGroup")
+	rm.ReplyMessageGroupID, err = strconv.Atoi(temp)
 	if err != nil {
 		c.AbortWithError(http.StatusBadRequest, err)
 		return

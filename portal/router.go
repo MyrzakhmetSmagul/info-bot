@@ -12,6 +12,9 @@ func (p *Portal) Run(port string) error {
 	router := gin.Default()
 	router.LoadHTMLGlob("./templates/*")
 	router.Static("/assets", "./assets")
+	router.GET("/", func(c *gin.Context) {
+		c.Redirect(http.StatusFound, "/create")
+	})
 	create := router.Group("/create")
 	// GET methods
 	{
@@ -57,18 +60,12 @@ func (p *Portal) Run(port string) error {
 			})
 		})
 		create.GET("/add/file", func(c *gin.Context) {
-			states, err := p.getAllStates()
-			if err != nil && !errors.Is(err, sql.ErrNoRows) {
-				c.AbortWithError(http.StatusInternalServerError, err)
-				return
-			}
 			messageGroups, err := p.getAllMessageGroup()
 			if err != nil && !errors.Is(err, sql.ErrNoRows) {
 				c.AbortWithError(http.StatusInternalServerError, err)
 				return
 			}
 			c.HTML(http.StatusOK, "addFile.html", gin.H{
-				"States":        states,
 				"MessageGroups": messageGroups,
 			})
 		})

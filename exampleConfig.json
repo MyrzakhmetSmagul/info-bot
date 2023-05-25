@@ -1,0 +1,18 @@
+{
+  "token": "TOKEN",
+  "base_path": "THE_PATH_TO_THE_DIRECTORY_WHERE_THE_DATA_WILL_BE_STORED",
+  "mysql_config": {
+    "User": "USER",
+    "Passwd": "PASSWORD",
+    "Net": "NETWORK_TYPE",
+    "Addr": "ADDR",
+    "DBName": "DATABASE_NAME",
+    "MultiStatements": true
+  },
+  "redis_options": {
+    "Addr": "ADDR",
+    "Password": "PASSWORD",
+    "DB": 0
+  },
+  "port": "8080"
+}

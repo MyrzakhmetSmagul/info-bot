@@ -16,6 +16,7 @@ var (
 	ErrStateNotFound     = errors.New("state not found")
 	ErrUndefinedLanguage = errors.New("undefined language")
 	DefaultState         State
+	StartMessageGroup    MessageGroup
 )
 
 type State struct {
@@ -58,11 +59,12 @@ type File struct {
 }
 
 type Chat struct {
-	ChatID int64
-	Active bool
-	Lang   string
-	State  State
-	CMD    bool
+	ChatID   int64
+	Active   bool
+	Lang     string
+	State    State
+	MsgGroup MessageGroup
+	CMD      bool
 }
 
 type Transition struct {

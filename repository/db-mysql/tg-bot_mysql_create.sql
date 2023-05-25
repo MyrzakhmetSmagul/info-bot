@@ -32,9 +32,9 @@ CREATE TABLE IF NOT EXISTS `message_group`
 
 CREATE TABLE IF NOT EXISTS `reply_markup`
 (
-    `id`           INT NOT NULL AUTO_INCREMENT,
-    `msg_group_id` INT NOT NULL,
-    `reply_msg_group_id`     INT NOT NULL,
+    `id`                 INT NOT NULL AUTO_INCREMENT,
+    `msg_group_id`       INT NOT NULL,
+    `reply_msg_group_id` INT NOT NULL,
     PRIMARY KEY (`id`),
     CONSTRAINT `reply_markup_fk0` FOREIGN KEY (`msg_group_id`) REFERENCES `message_group` (`id`),
     CONSTRAINT `reply_markup_fk1` FOREIGN KEY (`reply_msg_group_id`) REFERENCES `message_group` (`id`)
@@ -58,15 +58,19 @@ CREATE TABLE IF NOT EXISTS `file`
     CONSTRAINT `file_fk0` FOREIGN KEY (`msg_group_id`) REFERENCES `message_group` (`id`)
 );
 
+DROP TABLE chat;
+
 CREATE TABLE IF NOT EXISTS `chat`
 (
-    `chat_id`  INT     NOT NULL,
-    `active`   BOOLEAN NOT NULL,
-    `lang`     ENUM ("kz","ru","en") DEFAULT "ru",
-    `state_id` INT     NOT NULL,
-    `cmd`      BOOLEAN NOT NULL,
+    `chat_id`      INT     NOT NULL,
+    `active`       BOOLEAN NOT NULL,
+    `lang`         ENUM ("kz","ru","en") DEFAULT "ru",
+    `state_id`     INT     NOT NULL,
+    `msg_group_id` INT     NOT NULL,
+    `cmd`          BOOLEAN NOT NULL,
     PRIMARY KEY (`chat_id`),
-    CONSTRAINT `chat_fk0` FOREIGN KEY (`state_id`) REFERENCES `state` (`id`)
+    CONSTRAINT `chat_fk0` FOREIGN KEY (`state_id`) REFERENCES `state` (`id`),
+    CONSTRAINT `chat_fk1` FOREIGN KEY (`msg_group_id`) REFERENCES `message_group` (`id`)
 );
 
 
