@@ -28,18 +28,17 @@ func main() {
 	fileManager := file_manager.New(cnf.BasePath)
 	if len(os.Args) != 1 && (os.Args[1] == "-site" || os.Args[1] == "--site") {
 		site := portal.NewPortal(db, fileManager, cnf.BasePath)
-		go site.Run(cnf.Port)
+		site.Run(cnf.Port)
+	} else {
+
+		eventsProcessor := telegram.New(tgbot_api.New(cnf.Token), db, fileManager)
+		log.Println("...service started")
+		consumer := event_consumer.New(eventsProcessor, eventsProcessor, 100)
+		if err := consumer.Start(); err != nil {
+			log.Fatal(err)
+		}
 	}
 
-	eventsProcessor := telegram.New(tgbot_api.New(cnf.Token), db, fileManager)
-
-	log.Println("...service started")
-
-	consumer := event_consumer.New(eventsProcessor, eventsProcessor, 100)
-
-	if err := consumer.Start(); err != nil {
-		log.Fatal(err)
-	}
 }
 
 func getConfig() config {

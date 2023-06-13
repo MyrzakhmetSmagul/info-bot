@@ -19,11 +19,6 @@ const (
 	undefinedCommandTrigger      = "undefinedCommand"
 )
 
-type record struct {
-	state        repository.State
-	messageGroup repository.MessageGroup
-}
-
 var (
 	chatCmd             = make(map[int64]string)
 	ErrUndefinedCommand = errors.New("undefined command")
@@ -50,14 +45,14 @@ func (p Processor) processing(chat repository.Chat, text string, messageID int) 
 	msgGroup, err := p.getMessageGroup(text, chat.Lang)
 	if err != nil && !errors.Is(err, sql.ErrNoRows) {
 		return fmt.Errorf("event.telegram.processing failed: %w", err, text)
-	} else if !errors.Is(err, sql.ErrNoRows) {
-		log.Println(err)
+	} else if errors.Is(err, sql.ErrNoRows) {
+		log.Println("p.getMessageGroup(", text, chat.Lang, ") = ", err)
 		return p.sendMessage(chat, undefinedCommandTrigger)
 	}
 
 	transition, err := p.storage.GetTransition(chat.State.ID, msgGroup.ID)
 	if err != nil {
-		log.Println(err)
+		log.Println("p.storage.GetTransition(", text, chat.Lang, err)
 		return p.sendMessage(chat, undefinedCommandTrigger)
 	}
 
@@ -75,7 +70,6 @@ func (p Processor) processing(chat repository.Chat, text string, messageID int) 
 }
 
 func (p Processor) doCmd(chat repository.Chat, text string, messageID int) error {
-	log.Printf("do cmd text: %s", text)
 	var err error
 	valid := true
 	switch chatCmd[chat.ChatID] {
@@ -98,7 +92,6 @@ func (p Processor) doCmd(chat repository.Chat, text string, messageID int) error
 	}
 
 	if valid {
-		log.Println("do cmd valid")
 		chat.MsgGroup, err = p.getMessageGroupByID(chat.MsgGroup.ID)
 		if err != nil {
 			return fmt.Errorf("event.telegram.processing failed: %w", err)
@@ -205,7 +198,6 @@ func (p Processor) sendMessageWithData(chat *repository.Chat, msgGroup repositor
 	if err != nil {
 		return fmt.Errorf("events.telegram.sendMessage failed: %w", err)
 	}
-	log.Println("rkb:", rkb)
 	files, err := p.getFilesOfMsgGroup(msgGroup.ID)
 	if err != nil {
 		return fmt.Errorf("events.telegram.sendMessage failed: %w", err)
@@ -297,7 +289,7 @@ func (p Processor) getReply(msgGroupID int, lang string) (tgbotapi.ReplyKeyboard
 		if err != nil {
 			return tgbotapi.ReplyKeyboardMarkup{}, fmt.Errorf("events.telegram.getReply failed: %w", err)
 		}
-		keyboard = append(keyboard, tgbotapi.KeyboardButton{Text: msg.Text})
+		keyboard = append(keyboard, tgbotapi.KeyboardButton{Text: msg.MsgTrigger})
 		if len(keyboard) == 3 || i+1 == len(rms) {
 			rkb.Keyboard = append(rkb.Keyboard, keyboard)
 			keyboard = []tgbotapi.KeyboardButton{}
